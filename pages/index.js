@@ -3,11 +3,7 @@ import Header from '../comps/header';
 
 function Index() {
     return (
-        <Center>
-            <Box w='95vw'>
-                <Header />
-            </Box>
-        </Center>
+        <Header />
     );
 }
 
