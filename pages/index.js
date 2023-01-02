@@ -1,4 +1,4 @@
-import { Box, Center, Heading, useToast, FormControl, Input, FormLabel } from "@chakra-ui/react";
+import { Box, Center, Heading, useToast, FormControl, Input, Text } from "@chakra-ui/react";
 import Header from '../comps/header';
 import { useEffect, useState } from 'react';
 import config from '../comps/config';
@@ -6,16 +6,6 @@ import config from '../comps/config';
 function Index() {
     const toast = useToast();
     const [pin, setPin] = useState("");
-
-    useEffect(() => {
-        if (localStorage === undefined)
-            return;
-
-        let token = localStorage.getItem("token");
-        if (token !== undefined) {
-            // redirect 
-        }
-    });
 
     const loginUser = async (pin) => {
         console.log(config.api);
@@ -60,10 +50,10 @@ function Index() {
 
             <Center>
                 <Box>
-                    <Heading>Angel Cellular Phone Tracker</Heading>
+                    <Heading mt={100}>Angel Cellular Phone Tracker</Heading>
+                    <Center mt={15}><Text><b>PIN</b></Text></Center>
                     <Center>
-                        <FormControl w={150} mt={30}>
-                            <FormLabel textAlign='center'>PIN</FormLabel>
+                        <FormControl w={150} mt={1}>
                             <Input placeholder='0123' fontSize={32} letterSpacing={10} textAlign='center' h={55} w='100%' value={pin} maxLength={4} onChange={(e) => {
                                 let p = e.currentTarget.value;
                                 if (parseInt(p) === null)

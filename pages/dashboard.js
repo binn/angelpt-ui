@@ -1,4 +1,4 @@
-import { Heading, Box, Center, Spinner, Button, HStack, LinkOverlay, Flex, IconButton, useToast, Text, Checkbox } from "@chakra-ui/react"
+import { Heading, Box, Center, Spinner, Button, HStack, LinkOverlay, Flex, IconButton, useToast, Text, Checkbox, SimpleGrid, FormControl, FormLabel, Input } from "@chakra-ui/react"
 import Header from "../comps/header";
 
 import {
@@ -14,10 +14,11 @@ import {
 } from '@chakra-ui/react';
 
 import moment from 'moment';
-import { FiTrash } from 'react-icons/fi';
+import SelectedLot from "../comps/selectedLot";
+import { FiTrash, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 import config from '../comps/config';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 function Dashboard() {
     const [token, setToken] = useState("");
@@ -26,11 +27,22 @@ function Dashboard() {
     const [selected, setSelected] = useState(undefined);
     const [departments, setDepartments] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [query, setQuery] = useState("");
+    const [page, setPage] = useState(1);
+    const [pages, setPages] = useState(0);
+    const [lastSearch, setLastSearch] = useState(0);
+    const [lastSearchChange, setLastSearchChange] = useState(0);
 
     const toast = useToast();
+    const getLastSearchChange = useGetter(lastSearchChange);
+    const getQuery = useGetter(query);
+    const getPage = useGetter(page);
 
     useEffect(() => {
         if (localStorage === undefined)
+            return;
+
+        if (!loading)
             return;
 
         const u = localStorage.getItem("user");
@@ -45,6 +57,12 @@ function Dashboard() {
         (async () => {
             await fetchLots(t);
             await fetchDepartments(t);
+
+            setInterval(() => {
+                if (Date.now() - getLastSearchChange() < 750 && Date.now() - getLastSearchChange() > 250) {
+                    fetchLots(t, getPage(), getQuery());
+                }
+            }, 500);
             setLoading(false);
         })();
     });
@@ -63,17 +81,17 @@ function Dashboard() {
         setDepartments(result);
     }
 
-    const fetchLots = async (t) => {
-        if (lots.length !== 0)
-            return;
-
-        let res = await fetch(`${config.api}/lots?page=0`, {
+    const fetchLots = async (t, p, q) => {
+        let res = await fetch(`${config.api}/lots?page=${p ? p : page - 1}${q ? `&lotNo=${q}` : query !== "" ? `&lotNo=${query}` : ''}`, {
             headers: {
                 Authorization: `Bearer ${token ? token : t}`,
             },
         });
 
         let result = await res.json();
+
+        setPage(result.currentPage);
+        setPages(result.totalPages);
         setLots(result.results);
     }
 
@@ -93,57 +111,46 @@ function Dashboard() {
             <Header />
 
             <HStack w='100%'>
-                <Box p={25} h='91.5vh' w='65%'>
+                <Box h='91.5vh' w='65%'>
                     {selected !== undefined ?
-                        <HStack w='100%'>
-                            <Box w='100%' h={500}>
-                                <Heading fontSize='125%'>Lot Information</Heading>
-                                <Text mt={5}>Lot No - {selected.lotNo}</Text>
-                                <Text>Count - {selected.count}</Text>
-                                <Text>Model - {selected.model}</Text>
-                                <Text>Grade - {selected.grade}</Text>
-                                <Text>Created On - {moment(selected.timestamp).format('MM/DD/YYYY hh:mm A')}</Text>
-
-                                <Heading fontSize='125%' mt={25}>Assignments</Heading>
-                                <Box mt={5}>
-                                    {selected.assignments.map(assignment => {
-                                        return (
-                                            <Text>{departments.filter(x => x.id === assignment.id)[0].name} - {assignment.count}</Text>
-                                        );
-                                    })}
-                                </Box>
-                            </Box>
-
-                            <HStack spacing={5}>
-                                <Box h={500}>
-                                    <Heading fontSize='125%'>Testing</Heading>
-
-                                    <Box p={15} h={500} mt={5} borderWidth={1} borderRadius={5} w={250}>
-                                        {selected.tasks.filter(x => x.category === 'TESTING').map(task => {
-                                            return (
-                                                <Checkbox mt={2} isChecked={task.completed}>{task.name}</Checkbox>
-                                            );
-                                        })}
-                                    </Box>
-                                </Box>
-                                <Box h={500}>
-                                    <Heading fontSize='125%'>Grading</Heading>
-                                    <Box p={15} h={500} mt={5} borderWidth={1} borderRadius={5} w={250}>
-                                        {selected.tasks.filter(x => x.category === 'GRADING').map(task => {
-                                            return (
-                                                <Checkbox mt={2} isChecked={task.completed}>{task.name}</Checkbox>
-                                            );
-                                        })}
-                                    </Box>
-                                </Box>
-                            </HStack>
-                        </HStack>
+                        <SelectedLot lot={selected} user={user} token={token} departments={departments} />
                         : <></>}
 
                 </Box>
 
                 <Box w='35%'>
-                    <TableContainer h={'91.5vh'} w={'100%'} overflowY='scroll' overflowX='hidden'>
+                    <Flex alignItems='center' w='100%' borderWidth={1} p={15} borderBottomWidth={0} h='10vh'>
+                        <Input w='50%' placeholder='Search' value={query} onChange={(e) => {
+                            setLastSearchChange(Date.now());
+                            setQuery(e.currentTarget.value);
+                        }} onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                if (Date.now() - lastSearch < 500)
+                                    return;
+
+                                setLastSearch(Date.now());
+                                fetchLots();
+                            }
+                        }} />
+
+                        <Flex alignItems='center' justifyContent='right' w='50%' ml={3}>
+                            <Button mr={3} onClick={() => {
+                                if (page > 1) {
+                                    setPage(page - 1);
+                                    fetchLots(undefined, page - 1);
+                                }
+                            }}><FiChevronLeft /></Button>
+                            <Text>Page {page} of {pages}</Text>
+                            <Button ml={3} onClick={() => {
+                                if (page < pages) {
+                                    setPage(page + 1);
+                                    fetchLots(undefined, page + 1);
+                                }
+                            }}><FiChevronRight /></Button>
+                        </Flex>
+                    </Flex>
+
+                    <TableContainer h={'81.85vh'} w={'100%'} overflowY='scroll' overflowX='hidden'>
                         <Table borderWidth={1} variant='simple'>
                             <Thead>
                                 <Tr>
@@ -179,7 +186,7 @@ function Dashboard() {
                                         }}>
                                             <Td hidden>{lot.id}</Td>
                                             <Td>{lot.lotNo}</Td>
-                                            <Td>{lot.model}</Td>
+                                            <Td w={125} maxW={125} overflowX='hidden'>{lot.model}</Td>
                                             <Td>{lot.grade}</Td>
                                             <Td>{lot.count}</Td>
                                             <Td>
@@ -204,6 +211,12 @@ function Dashboard() {
             </HStack >
         </Box >
     );
+}
+
+function useGetter(value) {
+    const ref = useRef(value);
+    ref.current = value;
+    return useCallback(() => ref.current, []);
 }
 
 export default Dashboard;
