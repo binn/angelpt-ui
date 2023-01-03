@@ -1,4 +1,5 @@
 import { Heading, Box, Center, Spinner, Button, HStack, VStack, LinkOverlay, Flex, IconButton, useToast, Text, Checkbox, SimpleGrid, FormControl, FormLabel, Input } from "@chakra-ui/react"
+import AddNoteModalButton from "./createNoteModal";
 
 function SelectedLot({ lot, token, user, departments }) {
     return (
@@ -21,22 +22,26 @@ function SelectedLot({ lot, token, user, departments }) {
                 </Box>
 
                 <Box h={500}>
-                    <Heading fontSize='125%'>Testing</Heading>
+                    <Heading fontSize='125%'>Tasks / Testing</Heading>
 
                     <Box p={15} h={500} mt={5} borderWidth={1} borderRadius={5} w={300}>
                         {lot.tasks.filter(x => x.category === 'TESTING').map(task => {
                             return (
-                                <Checkbox mt={2} isChecked={task.completed}>{task.name}</Checkbox>
+                                <FormControl>
+                                    <Checkbox mt={2} isChecked={task.completed}>{task.name}</Checkbox>
+                                </FormControl>
                             );
                         })}
                     </Box>
                 </Box>
                 <Box h={500}>
-                    <Heading fontSize='125%'>Grading</Heading>
+                    <Heading fontSize='125%'>Tasks / Grading</Heading>
                     <Box p={15} h={500} mt={5} borderWidth={1} borderRadius={5} w={300}>
                         {lot.tasks.filter(x => x.category === 'GRADING').map(task => {
                             return (
-                                <Checkbox mt={2} isChecked={task.completed}>{task.name}</Checkbox>
+                                <FormControl>
+                                    <Checkbox mt={2} isChecked={task.completed}>{task.name}</Checkbox>
+                                </FormControl>
                             );
                         })}
                     </Box>

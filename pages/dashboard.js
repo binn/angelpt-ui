@@ -19,6 +19,9 @@ import { FiTrash, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 import config from '../comps/config';
 import { useState, useEffect, useRef, useCallback } from 'react';
+import AddLotModalButton from "../comps/addLotModal";
+import AddNoteModalButton from "../comps/createNoteModal";
+import EditTasksModalButton from "../comps/editTasksModal";
 
 function Dashboard() {
     const [token, setToken] = useState("");
@@ -32,6 +35,7 @@ function Dashboard() {
     const [pages, setPages] = useState(0);
     const [lastSearch, setLastSearch] = useState(0);
     const [lastSearchChange, setLastSearchChange] = useState(0);
+    const [tasks, setTasks] = useState([]);
 
     const toast = useToast();
     const getLastSearchChange = useGetter(lastSearchChange);
@@ -57,6 +61,7 @@ function Dashboard() {
         (async () => {
             await fetchLots(t);
             await fetchDepartments(t);
+            await fetchTasks(t);
 
             setInterval(() => {
                 if (Date.now() - getLastSearchChange() < 750 && Date.now() - getLastSearchChange() > 250) {
@@ -81,12 +86,31 @@ function Dashboard() {
         setDepartments(result);
     }
 
+    const fetchTasks = async (t) => {
+        if (tasks.length !== 0)
+            return;
+
+        let res = await fetch(`${config.api}/tasks/templates`, {
+            headers: {
+                Authorization: `Bearer ${token ? token : t}`,
+            },
+        });
+
+        let result = await res.json();
+        setTasks(result);
+    }
+
     const fetchLots = async (t, p, q) => {
         let res = await fetch(`${config.api}/lots?page=${p ? p : page - 1}${q ? `&lotNo=${q}` : query !== "" ? `&lotNo=${query}` : ''}`, {
             headers: {
                 Authorization: `Bearer ${token ? token : t}`,
             },
         });
+
+        if (res.status === 401) {
+            localStorage.clear();
+            window.location.href = '/';
+        }
 
         let result = await res.json();
 
@@ -150,7 +174,13 @@ function Dashboard() {
                         </Flex>
                     </Flex>
 
-                    <TableContainer h={'81.85vh'} w={'100%'} overflowY='scroll' overflowX='hidden'>
+                    <HStack spacing={5} alignItems='center' w='100%' borderWidth={1} p={15} borderBottomWidth={0} h='10vh'>
+                        <AddLotModalButton departments={departments} tasks={tasks} />
+                        <AddNoteModalButton disabled={selected !== undefined ? false : true} />
+                        <EditTasksModalButton disabled={selected !== undefined ? false : true} />
+                    </HStack>
+
+                    <TableContainer h={'71.85vh'} w={'100%'} overflowY='scroll' overflowX='hidden'>
                         <Table borderWidth={1} variant='simple'>
                             <Thead>
                                 <Tr>
