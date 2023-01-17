@@ -1,4 +1,4 @@
-import { Button, Textarea } from "@chakra-ui/react";
+import { Button, Textarea, useToast } from "@chakra-ui/react";
 
 import {
     Modal,
@@ -12,10 +12,12 @@ import {
 } from '@chakra-ui/react';
 
 import { useState } from 'react';
+import config from "./config";
 
-function AddNoteModalButton({ disabled }) {
+function AddNoteModalButton({ disabled, selected, token, reloadSelected }) {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [note, setNote] = useState('');
+    const toast = useToast();
 
     return (
         <>
@@ -33,7 +35,29 @@ function AddNoteModalButton({ disabled }) {
                     </ModalBody>
 
                     <ModalFooter>
-                        <Button colorScheme='green' w='100%'>Create</Button>
+                        <Button colorScheme='green' w='100%' onClick={async () => {
+                            let res = await fetch(`${config.api}/notes/lots/${selected.id}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`,
+                                },
+                                body: JSON.stringify(note),
+                            }).catch(e => { });
+
+                            if (res === undefined || !res.ok) {
+                                toast({
+                                    status: 'error',
+                                    position: 'bottom-left',
+                                    title: 'Error',
+                                    description: 'Error creating note, please try again.',
+                                });
+                            } else {
+                                // reload lot
+                                reloadSelected();
+                                onClose();
+                            }
+                        }}>Create</Button>
                     </ModalFooter>
                 </ModalContent>
             </Modal>

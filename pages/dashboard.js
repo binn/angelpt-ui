@@ -34,8 +34,9 @@ function Dashboard() {
     const [page, setPage] = useState(1);
     const [pages, setPages] = useState(0);
     const [lastSearch, setLastSearch] = useState(0);
-    const [lastSearchChange, setLastSearchChange] = useState(0);
+    const [lastSearchChange, setLastSearchChange] = useState(Date.now());
     const [tasks, setTasks] = useState([]);
+    const [loadingSelected, setLoadingSelected] = useState(false);
 
     const toast = useToast();
     const getLastSearchChange = useGetter(lastSearchChange);
@@ -43,12 +44,6 @@ function Dashboard() {
     const getPage = useGetter(page);
 
     useEffect(() => {
-        if (localStorage === undefined)
-            return;
-
-        if (!loading)
-            return;
-
         const u = localStorage.getItem("user");
         const t = localStorage.getItem("token");
 
@@ -70,7 +65,7 @@ function Dashboard() {
             }, 500);
             setLoading(false);
         })();
-    });
+    }, []);
 
     const fetchDepartments = async (t) => {
         if (departments.length !== 0)
@@ -119,6 +114,29 @@ function Dashboard() {
         setLots(result.results);
     }
 
+    const reloadSelected = async () => {
+        setLoadingSelected(true);
+        let res = await fetch(`${config.api}/lots/${selected.id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }).catch(e => { });
+
+        if (res === undefined || !res.ok) {
+            return toast({
+                status: 'error',
+                position: 'bottom-left',
+                title: 'Error',
+                description: 'Error fetching lot',
+            });
+            setLoadingSelected(false);
+        }
+
+        let result = await res.json();
+        setSelected(result);
+        setLoadingSelected(false);
+    }
+
     if (loading)
         return (
             <>
@@ -135,14 +153,16 @@ function Dashboard() {
             <Header />
 
             <HStack w='100%'>
-                <Box h='91.5vh' w='65%'>
-                    {selected !== undefined ?
-                        <SelectedLot lot={selected} user={user} token={token} departments={departments} />
-                        : <></>}
+                <Box h='91.5vh' w='100%'>
+                    {loadingSelected ?
+                        <Center><Spinner mt={100} /></Center> :
+                        (selected !== undefined ?
+                            <SelectedLot lot={selected} user={user} token={token} departments={departments} />
+                            : <></>)}
 
                 </Box>
 
-                <Box w='35%'>
+                <Box minW={600}>
                     <Flex alignItems='center' w='100%' borderWidth={1} p={15} borderBottomWidth={0} h='10vh'>
                         <Input w='50%' placeholder='Search' value={query} onChange={(e) => {
                             setLastSearchChange(Date.now());
@@ -175,9 +195,9 @@ function Dashboard() {
                     </Flex>
 
                     <HStack spacing={5} alignItems='center' w='100%' borderWidth={1} p={15} borderBottomWidth={0} h='10vh'>
-                        <AddLotModalButton departments={departments} tasks={tasks} />
-                        <AddNoteModalButton disabled={selected !== undefined ? false : true} />
-                        <EditTasksModalButton disabled={selected !== undefined ? false : true} />
+                        <AddLotModalButton departments={departments} token={token} tasks={tasks} />
+                        <AddNoteModalButton selected={selected} reloadSelected={reloadSelected} token={token} disabled={selected !== undefined ? false : true} />
+                        <EditTasksModalButton reloadSelected={reloadSelected} disabled={selected !== undefined ? false : true} lot={selected} token={token} tasks={tasks} />
                     </HStack>
 
                     <TableContainer h={'71.85vh'} w={'100%'} overflowY='scroll' overflowX='hidden'>

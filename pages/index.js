@@ -1,4 +1,4 @@
-import { Box, Center, Heading, useToast, FormControl, Input, Text } from "@chakra-ui/react";
+import { Box, Center, Heading, useToast, FormControl, Input, Text, Spinner } from "@chakra-ui/react";
 import Header from '../comps/header';
 import { useEffect, useState } from 'react';
 import config from '../comps/config';
@@ -6,9 +6,10 @@ import config from '../comps/config';
 function Index() {
     const toast = useToast();
     const [pin, setPin] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const loginUser = async (pin) => {
-        console.log(config.api);
+        setLoading(true);
         let res = await fetch(`${config.api}/authorization/login`, {
             method: 'POST',
             headers: {
@@ -19,11 +20,12 @@ function Index() {
 
         if (res === undefined || !res.ok) {
             setPin("");
+            setLoading(false);
             return toast({
                 status: 'error',
                 position: 'bottom-right',
                 title: 'Error',
-                description: 'error'
+                description: 'There was an unknown error while logging in!'
             });
         }
 
@@ -31,11 +33,12 @@ function Index() {
 
         if (result === undefined) {
             setPin("");
+            setLoading(false);
             return toast({
                 status: 'error',
                 position: 'bottom-right',
                 title: 'Error',
-                description: 'error'
+                description: 'There was an unknown error while logging in!'
             });
         }
 
@@ -54,18 +57,22 @@ function Index() {
                     <Center mt={15}><Text><b>PIN</b></Text></Center>
                     <Center>
                         <FormControl w={150} mt={1}>
-                            <Input placeholder='0123' fontSize={32} letterSpacing={10} textAlign='center' h={55} w='100%' value={pin} maxLength={4} onChange={(e) => {
-                                let p = e.currentTarget.value;
-                                if (parseInt(p) === null)
-                                    return;
+                            {loading ?
+                                <Box display='flex' alignItems='center' justifyContent='center' w='100%' h={55} borderRadius='0.375rem' borderWidth='1px'>
+                                    <Spinner opacity='75%' />
+                                </Box> :
+                                <Input placeholder={loading ? <Spinner /> : '0123'} disabled={loading} fontSize={32} letterSpacing={10} textAlign='center' h={55} w='100%' value={pin} maxLength={4} onChange={(e) => {
+                                    let p = e.currentTarget.value;
+                                    if (parseInt(p) === null)
+                                        return;
 
-                                setPin(p);
+                                    setPin(p);
 
-                                if (parseInt(p) !== undefined && p.length === 4) {
-                                    // login
-                                    loginUser(p);
-                                }
-                            }} />
+                                    if (parseInt(p) !== undefined && p.length === 4) {
+                                        // login
+                                        loginUser(p);
+                                    }
+                                }} />}
                         </FormControl>
                     </Center>
                 </Box>

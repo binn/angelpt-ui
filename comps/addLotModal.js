@@ -1,4 +1,4 @@
-import { Button, Checkbox, CheckboxGroup, Flex, FormControl, FormLabel, Input, Radio, RadioGroup, Select, VStack } from "@chakra-ui/react";
+import { Button, Checkbox, CheckboxGroup, Flex, FormControl, FormLabel, Input, Radio, RadioGroup, Select, useToast, VStack } from "@chakra-ui/react";
 
 import {
     Modal,
@@ -10,23 +10,20 @@ import {
     ModalCloseButton,
     useDisclosure,
 } from '@chakra-ui/react';
+import { useState } from "react";
+import config from "./config";
 
-function AddLotModalButton({ departments, tasks, disabled }) {
+function AddLotModalButton({ departments, tasks, token, disabled }) {
     const { isOpen, onOpen, onClose } = useDisclosure();
 
-    const testingTasks = [
-        "Fully Test",
-        "Wifi, Touch, Charge",
-        "Unlock",
-        "Flash",
-    ];
+    const [lotNumber, setLotNumber] = useState("");
+    const [modelNumber, setModelNumber] = useState("");
+    const [itemCount, setItemCount] = useState("");
+    const [grade, setGrade] = useState("A+");
+    const [startingDepartmentId, setStartingDepartmentId] = useState("");
+    const [lotTasks, setLotTasks] = useState([]);
 
-    const gradingTasks = [
-        "Clean",
-        "Grade",
-        "Temporary Lenstape",
-        "Original Lenstape",
-    ];
+    const toast = useToast();
 
     return (
         <>
@@ -42,24 +39,24 @@ function AddLotModalButton({ departments, tasks, disabled }) {
                     <ModalBody>
                         <FormControl w='100%'>
                             <FormLabel>Lot #</FormLabel>
-                            <Input placeholder='Lot #' />
+                            <Input onChange={(e) => setLotNumber(e.currentTarget.value)} value={lotNumber} placeholder='Lot #' />
                         </FormControl>
 
                         <Flex mt={15}>
                             <FormControl w='60%'>
                                 <FormLabel>Model #</FormLabel>
-                                <Input placeholder='Model #' />
+                                <Input onChange={(e) => setModelNumber(e.currentTarget.value)} value={modelNumber} placeholder='Model #' />
                             </FormControl>
 
                             <FormControl ml={3} w='40%'>
                                 <FormLabel>Item Count</FormLabel>
-                                <Input placeholder='Item Count' />
+                                <Input onChange={(e) => setItemCount(e.currentTarget.value)} value={itemCount} placeholder='Item Count' />
                             </FormControl>
                         </Flex>
 
                         <FormControl mt={15} w='100%'>
                             <FormLabel>Grade</FormLabel>
-                            <Select>
+                            <Select onChange={(e) => setGrade(e.currentTarget.value)} value={grade}>
                                 <option value='A+'>A+</option>
                                 <option value='A'>A</option>
                                 <option value='A-'>A-</option>
@@ -78,8 +75,8 @@ function AddLotModalButton({ departments, tasks, disabled }) {
 
                         <FormControl mt={15} w='100%'>
                             <FormLabel>Starting Department</FormLabel>
-                            <Select>
-                                {departments.map(department => {
+                            <Select onChange={(e) => setStartingDepartmentId(e.currentTarget.value)} value={startingDepartmentId}>
+                                {departments.filter(x => x.name !== 'HR').map(department => {
                                     return (
                                         <option value={department.id}>{department.name}</option>
                                     );
@@ -94,9 +91,11 @@ function AddLotModalButton({ departments, tasks, disabled }) {
                                     <VStack spacing={4} w='100%' alignItems='left'>
                                         {tasks.filter(x => x.category === 'TESTING').map(x => {
                                             return (
-                                                <>
-                                                    <Checkbox value={x.template}>{x.template}</Checkbox>
-                                                </>
+                                                <Checkbox checked={lotTasks.includes(x.id)} onChange={(e) => {
+                                                    lotTasks.includes(x.id) ?
+                                                        delete lotTasks[lotTasks.indexOf(x.id)] :
+                                                        lotTasks.push(x.id);
+                                                }}>{x.template}</Checkbox>
                                             );
                                         })}
                                     </VStack>
@@ -109,9 +108,11 @@ function AddLotModalButton({ departments, tasks, disabled }) {
                                     <VStack spacing={4} w='100%' alignItems='left'>
                                         {tasks.filter(x => x.category === 'GRADING').map(x => {
                                             return (
-                                                <>
-                                                    <Checkbox value={x.template}>{x.template}</Checkbox>
-                                                </>
+                                                <Checkbox checked={lotTasks.includes(x.id)} onChange={(e) => {
+                                                    lotTasks.includes(x.id) ?
+                                                        delete lotTasks[lotTasks.indexOf(x.id)] :
+                                                        lotTasks.push(x.id);
+                                                }}>{x.template}</Checkbox>
                                             );
                                         })}
                                     </VStack>
@@ -121,7 +122,33 @@ function AddLotModalButton({ departments, tasks, disabled }) {
                     </ModalBody>
 
                     <ModalFooter>
-                        <Button colorScheme='green' w='100%'>Add</Button>
+                        <Button colorScheme='green' w='100%' onClick={async () => {
+                            let res = await fetch(`${config.api}/lots`, {
+                                method: 'POST',
+                                headers: {
+                                    Authorization: `Bearer ${token}`,
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    lotNo: lotNumber,
+                                    count: itemCount,
+                                    department: startingDepartmentId,
+                                    tasks: lotTasks,
+                                    model: modelNumber,
+                                    grade,
+                                }),
+                            }).catch(e => { });
+
+                            if (res === undefined || !res.ok)
+                                return toast({
+                                    position: 'bottom-right',
+                                    status: 'error',
+                                    title: 'Error',
+                                    description: 'Error creating lot',
+                                });
+
+                            onClose();
+                        }}>Add</Button>
                     </ModalFooter>
                 </ModalContent>
             </Modal>

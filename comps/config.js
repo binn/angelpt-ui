@@ -1,3 +1,3 @@
 export default {
-    api: 'https://sarmad.ngrok.io',
+    api: 'https://track.angelcellular.com/api',
 };
