@@ -176,7 +176,7 @@ function Dashboard() {
                     {loadingSelected ?
                         <Center><Spinner mt={100} /></Center> :
                         (selected !== undefined ?
-                            <SelectedLot lot={selected} user={user} token={token} departments={departments} />
+                            <SelectedLot lot={selected} user={user} token={token} departments={departments} reloadSelected={reloadSelected}/>
                             : <></>)}
 
                 </Box>

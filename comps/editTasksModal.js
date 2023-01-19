@@ -42,7 +42,7 @@ function EditTasksModalButton({ disabled, lot, tasks, token, reloadSelected }) {
 
     return (
         <>
-            <Button disabled={disabled ? disabled : false} w='100%' onClick={onOpen}>
+            <Button disabled={tasks.filter(x => !lotTasks.includes(x.id)).length === 0 ? true : disabled ? disabled : false} w='100%' onClick={onOpen}>
                 Edit Tasks
             </Button>
 
@@ -76,7 +76,7 @@ function EditTasksModalButton({ disabled, lot, tasks, token, reloadSelected }) {
                                     <VStack spacing={4} w='100%' alignItems='left'>
                                         {tasks.filter(x => x.category === 'GRADING' && !lotTasks.includes(x.id)).map(x => {
                                             return (
-                                                <Checkbox onChange={(e) => {
+                                                <Checkbox style={{transform: 'scale(10.0)'}} onChange={(e) => {
                                                     newTasks.includes(x.id) ?
                                                         delete newTasks[newTasks.indexOf(x.id)] :
                                                         newTasks.push(x.id);
