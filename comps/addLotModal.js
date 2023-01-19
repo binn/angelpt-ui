@@ -13,14 +13,14 @@ import {
 import { useState } from "react";
 import config from "./config";
 
-function AddLotModalButton({ departments, tasks, token, disabled }) {
+function AddLotModalButton({ departments, tasks, token, disabled, onChange }) {
     const { isOpen, onOpen, onClose } = useDisclosure();
 
     const [lotNumber, setLotNumber] = useState("");
     const [modelNumber, setModelNumber] = useState("");
     const [itemCount, setItemCount] = useState("");
     const [grade, setGrade] = useState("A+");
-    const [startingDepartmentId, setStartingDepartmentId] = useState("");
+    const [startingDepartmentId, setStartingDepartmentId] = useState(departments.filter(x => x.name !== 'HR')[0].id);
     const [lotTasks, setLotTasks] = useState([]);
 
     const toast = useToast();
@@ -68,8 +68,8 @@ function AddLotModalButton({ departments, tasks, token, disabled }) {
                                 <option value='C-'>C-</option>
                                 <option value='D'>D</option>
                                 <option value='CPO'>CPO</option>
-                                <option value='New'>New</option>
-                                <option value='Unknown'>Unknown</option>
+                                <option value='NEW'>New</option>
+                                <option value='UNKNOWN'>Unknown</option>
                             </Select>
                         </FormControl>
 
@@ -147,6 +147,8 @@ function AddLotModalButton({ departments, tasks, token, disabled }) {
                                     description: 'Error creating lot',
                                 });
 
+                            if (onChange)
+                                onChange();
                             onClose();
                         }}>Add</Button>
                     </ModalFooter>

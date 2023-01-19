@@ -7,16 +7,16 @@ class SelectedLot extends React.Component {
     constructor(props) {
         super(props);
 
-        let t = props.lot.assignments.map(x => x);
+        let incomingAssignments = JSON.parse(JSON.stringify(props.lot.assignments)); // prevent javascript shallow copy
         this.state = {
-            assignments: t,
+            assignments: incomingAssignments,
         };
     }
 
     componentWillReceiveProps(newProps) {
-        let t = newProps.lot.assignments.map(x => x);
+        let incomingAssignments = JSON.parse(JSON.stringify(newProps.lot.assignments));
         this.state = {
-            assignments: t,
+            assignments: incomingAssignments,
         };
     }
 
@@ -38,6 +38,9 @@ class SelectedLot extends React.Component {
         let assignmentCountSum = this.state.assignments.reduce((a, b) => {
             return a + parseInt(b.count);
         }, 0);
+
+        if(assignmentCountSum == NaN)
+            assignmentCountSum = "INVALID!";
 
         return (
             <Box p={25} h='100%' overflowY='scroll'>
@@ -63,8 +66,9 @@ class SelectedLot extends React.Component {
                                                 <FormControl>
                                                     <FormLabel>{this.props.departments.filter(x => x.id === assignment.id)[0].name}</FormLabel>
                                                     <Input type='number' placeholder='0' defaultValue={0} value={this.state.assignments.filter(x => x.id === assignment.id)[0].count} onChange={(e) => {
-                                                        let updatedAssignments = this.state.assignments;
-                                                        updatedAssignments[updatedAssignments.indexOf(assignment)].count = e.currentTarget.value;
+                                                        let updatedAssignments = JSON.parse(JSON.stringify(this.state.assignments));
+                                                        let idx = updatedAssignments.indexOf(updatedAssignments.filter(x => x.id == assignment.id)[0]);
+                                                        updatedAssignments[idx].count = e.currentTarget.value;
 
                                                         this.setState((state, props) => {
                                                             return {
@@ -113,7 +117,7 @@ class SelectedLot extends React.Component {
                                             <Checkbox mr={2} defaultChecked={task.completed} onChange={async (e) => {
                                                 let completed = e.currentTarget.checked;
 
-                                                let result = await updateTaskCompletedState(completed, task);
+                                                let result = await this.updateTaskCompletedState(completed, task);
                                                 if (!result) {
                                                     e.currentTarget.checked = !completed;
                                                 }
@@ -137,7 +141,7 @@ class SelectedLot extends React.Component {
                                             <Checkbox mr={2} defaultChecked={task.completed} onChange={async (e) => {
                                                 let completed = e.currentTarget.checked;
 
-                                                let result = await updateTaskCompletedState(completed, task);
+                                                let result = await this.updateTaskCompletedState(completed, task);
                                                 if (!result) {
                                                     e.currentTarget.checked = !completed;
                                                 }

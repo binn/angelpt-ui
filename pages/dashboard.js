@@ -51,7 +51,7 @@ function Dashboard() {
             window.location.href = '/';
 
         setToken(t);
-        setUser(u);
+        setUser(JSON.parse(u));
 
         (async () => {
             await fetchLots(t);
@@ -66,6 +66,25 @@ function Dashboard() {
             setLoading(false);
         })();
     }, []);
+
+    const selectLot = async (lot) => {
+        let res = await fetch(`${config.api}/lots/${lot.id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }).catch(e => { });
+
+        if (res === undefined || !res.ok)
+            return toast({
+                status: 'error',
+                position: 'bottom-left',
+                title: 'Error',
+                description: 'Error fetching lot',
+            });
+
+        let result = await res.json();
+        setSelected(result);
+    }
 
     const fetchDepartments = async (t) => {
         if (departments.length !== 0)
@@ -162,7 +181,7 @@ function Dashboard() {
 
                 </Box>
 
-                <Box minW={600}>
+                <Box minW={[600, 700, 800]}>
                     <Flex alignItems='center' w='100%' borderWidth={1} p={15} borderBottomWidth={0} h='10vh'>
                         <Input w='50%' placeholder='Search' value={query} onChange={(e) => {
                             setLastSearchChange(Date.now());
@@ -195,7 +214,7 @@ function Dashboard() {
                     </Flex>
 
                     <HStack spacing={5} alignItems='center' w='100%' borderWidth={1} p={15} borderBottomWidth={0} h='10vh'>
-                        <AddLotModalButton departments={departments} token={token} tasks={tasks} />
+                        <AddLotModalButton departments={departments} token={token} tasks={tasks} onChange={fetchLots} />
                         <AddNoteModalButton selected={selected} reloadSelected={reloadSelected} token={token} disabled={selected !== undefined ? false : true} />
                         <EditTasksModalButton reloadSelected={reloadSelected} disabled={selected !== undefined ? false : true} lot={selected} token={token} tasks={tasks} />
                     </HStack>
@@ -216,38 +235,39 @@ function Dashboard() {
                             <Tbody>
                                 {lots.map(lot => {
                                     return (
-                                        <Tr bg={selected?.id === lot.id ? 'rgba(0, 0, 0, 0.1)' : ''} _hover={{ bg: 'rgba(0, 0, 0, 0.1)', cursor: 'pointer' }} onClick={async () => {
-                                            let res = await fetch(`${config.api}/lots/${lot.id}`, {
-                                                headers: {
-                                                    Authorization: `Bearer ${token}`,
-                                                },
-                                            }).catch(e => { });
-
-                                            if (res === undefined || !res.ok)
-                                                return toast({
-                                                    status: 'error',
-                                                    position: 'bottom-left',
-                                                    title: 'Error',
-                                                    description: 'Error fetching lot',
-                                                });
-
-                                            let result = await res.json();
-                                            setSelected(result);
-                                        }}>
+                                        <Tr bg={selected?.id === lot.id ? 'rgba(0, 0, 0, 0.1)' : ''} _hover={{ bg: 'rgba(0, 0, 0, 0.1)', cursor: 'pointer' }}>
                                             <Td hidden>{lot.id}</Td>
-                                            <Td>{lot.lotNo}</Td>
-                                            <Td w={125} maxW={125} overflowX='hidden'>{lot.model}</Td>
-                                            <Td>{lot.grade}</Td>
-                                            <Td>{lot.count}</Td>
-                                            <Td>
+                                            <Td onClick={() => selectLot(lot)}>{lot.lotNo}</Td>
+                                            <Td onClick={() => selectLot(lot)} w={125} maxW={125} overflowX='hidden'>{lot.model}</Td>
+                                            <Td onClick={() => selectLot(lot)}>{lot.grade}</Td>
+                                            <Td onClick={() => selectLot(lot)}>{lot.count}</Td>
+                                            <Td onClick={() => selectLot(lot)}>
                                                 {moment(lot.timestamp).format('MM/DD/YYYY hh:mm A')}
                                             </Td>
                                             <Td hidden={!user.supervisor}>
                                                 <IconButton
                                                     bg='none'
                                                     icon={<FiTrash color='red' />}
-                                                    onClick={() => {
-                                                        // delete
+                                                    onClick={async () => {
+                                                        let res = await fetch(`${config.api}/lots/${lot.id}`, {
+                                                            method: 'DELETE',
+                                                            headers: {
+                                                                Authorization: `Bearer ${token}`,
+                                                            }
+                                                        }).catch(e => { });
+
+                                                        if (res === undefined || !res.ok)
+                                                            return toast({
+                                                                position: 'bottom-right',
+                                                                status: 'error',
+                                                                title: 'Error',
+                                                                description: 'Error deleting lot',
+                                                            });
+
+                                                        if (selected?.id === lot.id)
+                                                            setSelected(undefined);
+
+                                                        await fetchLots();
                                                     }}
                                                 />
                                             </Td>
