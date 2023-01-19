@@ -51,7 +51,7 @@ function Index() {
                                 <Box display='flex' alignItems='center' justifyContent='center' w='100%' h={55} borderRadius='0.375rem' borderWidth='1px'>
                                     <Spinner opacity='75%' />
                                 </Box> :
-                                <Input placeholder={loading ? <Spinner /> : '0123'} disabled={loading} fontSize={32} letterSpacing={10} textAlign='center' h={55} w='100%' value={pin} maxLength={4} onChange={(e) => {
+                                <Input type='password' placeholder={loading ? <Spinner /> : '0123'} disabled={loading} fontSize={32} letterSpacing={10} textAlign='center' h={55} w='100%' value={pin} maxLength={4} onChange={(e) => {
                                     let p = e.currentTarget.value;
                                     if (parseInt(p) === null)
                                         return;

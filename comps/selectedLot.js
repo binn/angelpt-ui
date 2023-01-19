@@ -2,6 +2,8 @@ import { Heading, Box, Button, HStack, VStack, LinkOverlay, Flex, IconButton, us
 import config from "./config";
 import moment from "moment";
 import React from 'react';
+import { FiTrash } from "react-icons/fi";
+import DeletionConfirmationModalButton from "./deletionConfirmationModal";
 
 class SelectedLot extends React.Component {
     constructor(props) {
@@ -30,8 +32,7 @@ class SelectedLot extends React.Component {
             },
         }).catch(e => { });
 
-        if (res === undefined || !res.ok)
-        {
+        if (res === undefined || !res.ok) {
             this.toast(await config.error(res, 'Error updating task'));
             return false;
         }
@@ -63,9 +64,9 @@ class SelectedLot extends React.Component {
                                 <Text>Last Updated - {new Date(this.props.lot.audits[0].timestamp).toLocaleString()}</Text>
                             </Box>
                             <Heading fontSize='125%' mt={10}>Assignments</Heading>
-                            <Box h='100%' mt={5}>
+                            <Box mt={5}>
                                 <VStack w='100%' h='100%'>
-                                    <SimpleGrid spacing={4} columns={3} w='100%'>
+                                    <SimpleGrid maxH={172} overflowY='auto' spacing={4} columns={3} w='100%'>
                                         {this.props.lot.assignments.map(assignment => {
                                             return (
                                                 <FormControl>
@@ -167,17 +168,37 @@ class SelectedLot extends React.Component {
                 <Box w='100%' mt={15}>
                     <Heading fontSize='125%'>Notes</Heading>
                     <Box borderRadius={5} h={300} overflowY='scroll' p={15} borderWidth={1} mt={5}>
-                        {this.props.lot.notes.length == 0 ?
-                            <Text>There are no notes currently associated with this lot.</Text>
-                            : this.props.lot.notes.map(note => {
-                                return (
-                                    <Box mb={5} borderRadius={5} p={15} borderWidth={1}>
-                                        <Text>Created by <b>{note.createdBy}</b></Text>
+                        <SimpleGrid w='100%' columns={2}>
+                            {this.props.lot.notes.length == 0 ?
+                                <Text>There are no notes currently associated with this lot.</Text>
+                                : this.props.lot.notes.map(note => {
+                                    return (
+                                        <Box mb={5} borderRadius={5} p={15} borderWidth={1}>
+                                            <Flex h={8} w={'100%'} position='relative' alignItems='center'>
+                                                <Text position='absolute' left={0}>Created by <b>{note.createdBy}</b></Text>
+                                                <Box position='absolute' right={0}>
+                                                    <DeletionConfirmationModalButton onDelete={async () => {
+                                                        let res = await fetch(`${config.api}/notes/${note.id}`, {
+                                                            method: 'DELETE',
+                                                            headers: {
+                                                                Authorization: `Bearer ${this.props.token}`,
+                                                            },
+                                                        }).catch(e => { });
 
-                                        <Text mt={2}>{note.data}</Text>
-                                    </Box>
-                                );
-                            })}
+                                                        if (res === undefined || !res.ok)
+                                                            return this.toast(config.error(res, 'Error deleting note'));
+
+                                                        this.props.reloadSelected(false);
+                                                    }} />
+                                                </Box>
+
+                                            </Flex>
+
+                                            <Text mt={2}>{note.data}</Text>
+                                        </Box>
+                                    );
+                                })}
+                        </SimpleGrid>
                     </Box>
                 </Box>
 
@@ -222,14 +243,16 @@ function AuditData({ audit, departments, mt = 0 }) {
                 <Text>
                     <b>Old</b>
                     {data.old.map((x) => {
-                        return (<Text>{departments.filter(y => y.id === x.id)[0].name}: {x.count}</Text>);
+                        let d = departments.filter(y => y.id === x.id)[0];
+                        return (<Text>{d ? d.name : 'Unknown'}: {x.count}</Text>);
                     })}
                 </Text>
 
                 <Text>
                     <b>New</b>
                     {data.updated.map((x) => {
-                        return (<Text>{departments.filter(y => y.id === x.id)[0].name}: {x.count}</Text>);
+                        let d = departments.filter(y => y.id === x.id)[0];
+                        return (<Text>{d ? d.name : 'Unknown'}: {x.count}</Text>);
                     })}
                 </Text>
             </HStack>

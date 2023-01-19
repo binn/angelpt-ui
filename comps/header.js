@@ -26,10 +26,10 @@ function Header() {
 
         setLoggedIn(localStorage.getItem("token") !== null);
 
-        const u = localStorage.getItem("user");
-        if (u != undefined)
+        let u = localStorage.getItem("user");
+        if (u !== undefined)
             setUser(JSON.parse(u));
-    });
+    }, []);
 
     return (
         <Box as="section" >
@@ -39,14 +39,8 @@ function Header() {
                 <ButtonGroup position='absolute' left={250} variant="link" spacing="8">
                     <Button as={Link} href="/dashboard">Lots Dashboard</Button>
                     <Button as={Link} href="/archive">Archived Lots</Button>
-                    <Menu isLazy>
-                        <MenuButton hidden={!user?.admin}>Administration</MenuButton>
-                        <MenuList>
-                            <MenuItem as={Link} href="/administration/employees">Employees</MenuItem>
-                            <MenuItem as={Link} href="/administration/departments">Departments</MenuItem>
-                            <MenuItem as={Link} href="/administration/task-templates">Task Templates</MenuItem>
-                        </MenuList>
-                    </Menu>
+                    <Button hidden={!user?.admin} as={Link} href="/administration">Administration</Button>
+
                     <Button hidden={!user?.admin} as={Link} href="/analytics">Analytics</Button>
                 </ButtonGroup>
 

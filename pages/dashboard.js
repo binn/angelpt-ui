@@ -22,6 +22,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import AddLotModalButton from "../comps/addLotModal";
 import AddNoteModalButton from "../comps/createNoteModal";
 import EditTasksModalButton from "../comps/editTasksModal";
+import DeletionConfirmationModalButton from "../comps/deletionConfirmationModal";
 
 function Dashboard() {
     const [token, setToken] = useState("");
@@ -128,8 +129,9 @@ function Dashboard() {
         setLots(result.results);
     }
 
-    const reloadSelected = async () => {
-        setLoadingSelected(true);
+    const reloadSelected = async (updateLoading) => {
+        updateLoading ?? setLoadingSelected(true);
+
         let res = await fetch(`${config.api}/lots/${selected.id}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -137,14 +139,14 @@ function Dashboard() {
         }).catch(e => { });
 
         if (res === undefined || !res.ok) {
-            setLoadingSelected(false);
+            updateLoading ?? setLoadingSelected(false);
 
             return toast(await config.error(res, `Error fetching lot ${selected.lotNo}`));
         }
 
         let result = await res.json();
         setSelected(result);
-        setLoadingSelected(false);
+        updateLoading ?? setLoadingSelected(false);
     }
 
     if (loading)
@@ -230,20 +232,18 @@ function Dashboard() {
                             <Tbody>
                                 {lots.map(lot => {
                                     return (
-                                        <Tr bg={selected?.id === lot.id ? 'rgba(0, 0, 0, 0.1)' : ''} _hover={{ bg: 'rgba(0, 0, 0, 0.1)', cursor: 'pointer' }}>
+                                        <Tr onClick={() => selectLot(lot)} bg={selected?.id === lot.id ? 'rgba(0, 0, 0, 0.1)' : ''} _hover={{ bg: 'rgba(0, 0, 0, 0.1)', cursor: 'pointer' }}>
                                             <Td hidden>{lot.id}</Td>
-                                            <Td onClick={() => selectLot(lot)}>{lot.lotNo}</Td>
-                                            <Td onClick={() => selectLot(lot)} w={125} maxW={125} overflowX='hidden'>{lot.model}</Td>
-                                            <Td onClick={() => selectLot(lot)}>{lot.grade}</Td>
-                                            <Td onClick={() => selectLot(lot)}>{lot.count}</Td>
-                                            <Td onClick={() => selectLot(lot)}>
+                                            <Td>{lot.lotNo}</Td>
+                                            <Td w={125} maxW={125} overflowX='hidden'>{lot.model}</Td>
+                                            <Td>{lot.grade}</Td>
+                                            <Td>{lot.count}</Td>
+                                            <Td>
                                                 {moment(lot.timestamp).format('MM/DD/YYYY hh:mm A')}
                                             </Td>
                                             <Td hidden={!user.supervisor}>
-                                                <IconButton
-                                                    bg='none'
-                                                    icon={<FiTrash color='red' />}
-                                                    onClick={async () => {
+                                                <DeletionConfirmationModalButton
+                                                    onDelete={async () => {
                                                         let res = await fetch(`${config.api}/lots/${lot.id}`, {
                                                             method: 'DELETE',
                                                             headers: {

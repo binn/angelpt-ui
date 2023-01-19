@@ -1,6 +1,5 @@
-import { Heading, Box, Center, Spinner, Button, HStack, LinkOverlay, Flex, IconButton, useToast, Text, Checkbox, SimpleGrid, FormControl, FormLabel, Input } from "@chakra-ui/react"
-import Header from "../comps/header";
-
+import Header from '../comps/header';
+import { Box, Center, Heading, HStack, Spinner, StackDivider, useToast, IconButton, Flex, Button } from '@chakra-ui/react';
 import {
     Table,
     Thead,
@@ -12,220 +11,224 @@ import {
     TableCaption,
     TableContainer,
 } from '@chakra-ui/react';
-
-import moment from 'moment';
-import SelectedLot from "../comps/selectedLot";
-import { FiTrash, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-
+import { useState, useEffect } from 'react';
+import { FiTrash } from 'react-icons/fi';
 import config from '../comps/config';
-import { useState, useEffect, useRef, useCallback } from 'react';
-import AddLotModalButton from "../comps/addLotModal";
-import AddNoteModalButton from "../comps/createNoteModal";
-import EditTasksModalButton from "../comps/editTasksModal";
+import CreateEmployeeModalButton from '../comps/createEmployeeModal';
+import CreateDepartmentModalButton from '../comps/createDepartmentModal';
+import CreateTaskTemplateModalButton from '../comps/createTaskTemplateModal';
+import DeletionConfirmationModalButton from '../comps/deletionConfirmationModal';
+import EditEmployeeModalButton from '../comps/editEmployeeModal';
 
-function Administration() {
+function AdministrationDashboard() {
+    const [loading, setLoading] = useState(true);
+    const [employees, setEmployees] = useState([]);
+    const [departments, setDepartments] = useState([]);
+    const [tasks, setTasks] = useState([]);
     const [token, setToken] = useState("");
     const [user, setUser] = useState({});
-    const [employees, setEmployees] = useState([]);
-    const [selected, setSelected] = useState(undefined);
-    const [departments, setDepartments] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [tasks, setTasks] = useState([]);
-    const [loadingSelected, setLoadingSelected] = useState(false);
-
+    const [selectedDepartment, setSelectedDepartment] = useState();
+    const [selectedTask, setSelectedTask] = useState();
+    const [selectedEmployee, setSelectedEmployee] = useState();
     const toast = useToast();
+
+    const fetchTasks = async (t) => {
+        let res = await fetch(`${config.api}/tasks/templates`, {
+            headers: {
+                Authorization: `Bearer ${token ? token : t}`,
+            },
+        }).catch(e => { });
+
+        if (res === undefined || !res.ok) {
+            toast(await config.error(res, 'Error fetching task templates'));
+            return false;
+        }
+
+        let result = await res.json().catch(e => { });
+        if (result === undefined)
+            return false;
+
+        setTasks(result);
+        return result;
+    }
+
+    const fetchDepartments = async (t) => {
+        let res = await fetch(`${config.api}/admin/departments`, {
+            headers: {
+                Authorization: `Bearer ${token ? token : t}`,
+            },
+        }).catch(e => { });
+
+        if (res === undefined || !res.ok) {
+            toast(await config.error(res, 'Error fetching departments'));
+            return false;
+        }
+
+        let result = await res.json().catch(e => { });
+        if (result === undefined)
+            return false;
+
+        setDepartments(result);
+        return result;
+    }
+
+    const fetchEmployees = async (t) => {
+        let res = await fetch(`${config.api}/admin/employees`, {
+            headers: {
+                Authorization: `Bearer ${token ? token : t}`,
+            },
+        }).catch(e => { });
+
+        if (res === undefined || !res.ok) {
+            toast(await config.error(res, 'Error fetching employees'));
+            return false;
+        }
+
+        let result = await res.json().catch(e => { });
+        if (result === undefined)
+            return false;
+
+        setEmployees(result);
+        return result;
+    }
 
     useEffect(() => {
         const u = localStorage.getItem("user");
         const t = localStorage.getItem("token");
 
-        if (u === undefined || t === undefined)
+        if (u === undefined || t === undefined || JSON.parse(u).admin !== true)
             window.location.href = '/';
 
         setToken(t);
         setUser(JSON.parse(u));
 
-        if(!user.admin)
-            window.location.href = '/dashboard';
-
         (async () => {
-            await fetchEmployees(t);
-            await fetchDepartments(t);
-            await fetchTasks(t);
+            let tsks = await fetchTasks(t);
+            let dpts = await fetchDepartments(t);
+            let empl = await fetchEmployees(t);
+
+            if (tsks === false || dpts === false || empl === false)
+                return;
 
             setLoading(false);
         })();
     }, []);
 
-    const selectLot = async (lot) => {
-        let res = await fetch(`${config.api}/lots/${lot.id}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        }).catch(e => { });
-
-        if (res === undefined || !res.ok)
-            return toast({
-                status: 'error',
-                position: 'bottom-left',
-                title: 'Error',
-                description: 'Error fetching lot',
-            });
-
-        let result = await res.json();
-        setSelected(result);
-    }
-
-    const fetchDepartments = async (t) => {
-        if (departments.length !== 0)
-            return;
-
-        let res = await fetch(`${config.api}/departments`, {
-            headers: {
-                Authorization: `Bearer ${token ? token : t}`,
-            },
-        });
-
-        let result = await res.json();
-        setDepartments(result);
-    }
-
-    const fetchTasks = async (t) => {
-        if (tasks.length !== 0)
-            return;
-
-        let res = await fetch(`${config.api}/tasks/templates`, {
-            headers: {
-                Authorization: `Bearer ${token ? token : t}`,
-            },
-        });
-
-        let result = await res.json();
-        setTasks(result);
-    }
-
-    const fetchEmployees = async (t, p, q) => {
-        let res = await fetch(`${config.api}/employees`, {
-            headers: {
-                Authorization: `Bearer ${token ? token : t}`,
-            },
-        });
-
-        if (res.status === 401) {
-            localStorage.clear();
-            window.location.href = '/';
-        }
-
-        let result = await res.json();
-        setEmployees(result);
-    }
-
-    const reloadSelected = async () => {
-        setLoadingSelected(true);
-        let res = await fetch(`${config.api}/lots/${selected.id}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        }).catch(e => { });
-
-        if (res === undefined || !res.ok) {
-            return toast({
-                status: 'error',
-                position: 'bottom-left',
-                title: 'Error',
-                description: 'Error fetching lot',
-            });
-            setLoadingSelected(false);
-        }
-
-        let result = await res.json();
-        setSelected(result);
-        setLoadingSelected(false);
-    }
-
     if (loading)
         return (
-            <>
+            <Box>
                 <Header />
-
-                <Center mt={100}>
-                    <Spinner />
+                <Center>
+                    <Spinner mt={100} />
                 </Center>
-            </>
+            </Box>
         );
 
     return (
         <Box>
             <Header />
+            <Box p={25} w='100%' h={600}>
+                <Flex id='employees' alignItems='center'>
+                    <Heading>Employees</Heading>
+                    <CreateEmployeeModalButton departments={departments} disabled={false} reloadSelected={fetchEmployees} token={token} />
+                    <EditEmployeeModalButton departments={departments} disabled={selectedEmployee !== undefined ? false : true} reloadSelected={fetchEmployees} token={token} selected={selectedEmployee ? employees.filter(x => x.id === selectedEmployee)[0] : undefined} />
+                </Flex>
 
-            <HStack w='100%'>
-                <Box h='91.5vh' w='100%'>
-                    {loadingSelected ?
-                        <Center><Spinner mt={100} /></Center> :
-                        (selected !== undefined ?
-                            <SelectedLot lot={selected} user={user} token={token} departments={departments} reloadSelected={reloadSelected}/>
-                            : <></>)}
+                <TableContainer p={25} maxH={540} w={'100%'} overflowY='scroll' overflowX='hidden'>
+                    <Table borderWidth={1} variant='simple'>
+                        <Thead>
+                            <Tr>
+                                <Th>ID</Th>
+                                <Th>Name</Th>
+                                <Th>Department</Th>
+                                <Th>Is Administrator?</Th>
+                                <Th>Is Supervisor?</Th>
+                                <Th>PIN</Th>    
+                                <Th>Created On</Th>
+                                <Th><FiTrash /></Th>
+                            </Tr>
+                        </Thead>
+                        <Tbody>
+                            {employees.map(employee => {
+                                return (
+                                    <Tr onClick={() => selectedEmployee === employee.id ? setSelectedEmployee(undefined) : setSelectedEmployee(employee.id)} bg={selectedEmployee === employee.id ? 'rgba(0, 0, 0, 0.1)' : ''} _hover={{ bg: 'rgba(0, 0, 0, 0.1)', cursor: 'pointer' }}>
+                                        <Td>{employee.id}</Td>
+                                        <Td>{employee.firstName} {employee.lastName}</Td>
+                                        <Td>{employee.department.name}</Td>
+                                        <Td>{employee.admin ? 'Yes' : 'No'}</Td>
+                                        <Td>{employee.supervisor ? 'Yes' : 'No'}</Td>
+                                        <Td>{employee.pin}</Td>
+                                        <Td>{new Date(employee.timestamp).toLocaleString()}</Td>
 
-                </Box>
+                                        <Td>
+                                            <DeletionConfirmationModalButton
+                                                onDelete={async () => {
+                                                    let res = await fetch(`${config.api}/admin/employees/${employee.id}`, {
+                                                        method: 'DELETE',
+                                                        headers: {
+                                                            Authorization: `Bearer ${token}`,
+                                                        }
+                                                    }).catch(e => { });
 
-                <Box minW={[600, 700, 800]}>
-                    <HStack spacing={5} alignItems='center' w='100%' borderWidth={1} p={15} borderBottomWidth={0} h='10vh'>
-                        <AddLotModalButton departments={departments} token={token} tasks={tasks} onChange={fetchEmployees} />
-                        <AddNoteModalButton selected={selected} reloadSelected={reloadSelected} token={token} disabled={selected !== undefined ? false : true} />
-                        <EditTasksModalButton reloadSelected={reloadSelected} disabled={selected !== undefined ? false : true} lot={selected} token={token} tasks={tasks} />
-                    </HStack>
+                                                    if (res === undefined || !res.ok)
+                                                        return toast(await config.error(res, `Error deleting employee ${employee.firstName} ${employee.lastName}`));
 
-                    <TableContainer h={'71.85vh'} w={'100%'} overflowY='scroll' overflowX='hidden'>
+                                                    if (selectedEmployee === employee.id)
+                                                        setSelectedEmployee(undefined);
+
+                                                    await fetchEmployees();
+                                                }}
+                                            />
+                                        </Td>
+                                    </Tr>
+                                );
+                            })}
+                        </Tbody>
+                    </Table>
+                </TableContainer>
+            </Box>
+            <HStack maxW='100vw' p={25} spacing={5}>
+                <Box id='departments' w='100%' h='100%'>
+                    <Flex alignItems='center'>
+                        <Heading>Departments</Heading>
+                        <CreateDepartmentModalButton disabled={false} reloadSelected={fetchDepartments} token={token} />
+                    </Flex>
+
+                    <TableContainer p={25} maxH={440} w={'100%'} overflowY='scroll' overflowX='hidden'>
                         <Table borderWidth={1} variant='simple'>
                             <Thead>
                                 <Tr>
-                                    <Th hidden>id</Th>
-                                    <Th>Lot #</Th>
-                                    <Th>Model</Th>
-                                    <Th>Grade</Th>
-                                    <Th>Count</Th>
-                                    <Th>Created On</Th>
-                                    <Th hidden={!user.supervisor}><Center><FiTrash /></Center></Th>
+                                    <Th>Name</Th>
+                                    <Th>Employees</Th>
+                                    <Th>Description</Th>
+                                    <Th><FiTrash /></Th>
                                 </Tr>
                             </Thead>
                             <Tbody>
-                                {lots.map(lot => {
+                                {departments.map(department => {
                                     return (
-                                        <Tr bg={selected?.id === lot.id ? 'rgba(0, 0, 0, 0.1)' : ''} _hover={{ bg: 'rgba(0, 0, 0, 0.1)', cursor: 'pointer' }}>
-                                            <Td hidden>{lot.id}</Td>
-                                            <Td onClick={() => selectLot(lot)}>{lot.lotNo}</Td>
-                                            <Td onClick={() => selectLot(lot)} w={125} maxW={125} overflowX='hidden'>{lot.model}</Td>
-                                            <Td onClick={() => selectLot(lot)}>{lot.grade}</Td>
-                                            <Td onClick={() => selectLot(lot)}>{lot.count}</Td>
-                                            <Td onClick={() => selectLot(lot)}>
-                                                {moment(lot.timestamp).format('MM/DD/YYYY hh:mm A')}
-                                            </Td>
-                                            <Td hidden={!user.supervisor}>
-                                                <IconButton
-                                                    bg='none'
-                                                    icon={<FiTrash color='red' />}
-                                                    onClick={async () => {
-                                                        let res = await fetch(`${config.api}/lots/${lot.id}`, {
-                                                            method: 'DELETE',
-                                                            headers: {
-                                                                Authorization: `Bearer ${token}`,
-                                                            }
-                                                        }).catch(e => { });
+                                        <Tr onClick={() => selectedDepartment === department.id ? setSelectedDepartment(undefined) : setSelectedDepartment(department.id)} bg={selectedDepartment === department.id ? 'rgba(0, 0, 0, 0.1)' : ''} _hover={{ bg: 'rgba(0, 0, 0, 0.1)', cursor: 'pointer' }}>
+                                            <Td>{department.default ? <b>{department.name}</b> : department.name}</Td>
+                                            <Td>{department.employees.length}</Td>
+                                            <Td maxW={550} overflowX='hidden'>{department.description}</Td>
 
-                                                        if (res === undefined || !res.ok)
-                                                            return toast({
-                                                                position: 'bottom-right',
-                                                                status: 'error',
-                                                                title: 'Error',
-                                                                description: 'Error deleting lot',
-                                                            });
+                                            <Td>
+                                                <DeletionConfirmationModalButton onDelete={async () => {
+                                                    let res = await fetch(`${config.api}/admin/departments/${department.id}`, {
+                                                        method: 'DELETE',
+                                                        headers: {
+                                                            Authorization: `Bearer ${token}`,
+                                                        }
+                                                    }).catch(e => { });
 
-                                                        if (selected?.id === lot.id)
-                                                            setSelected(undefined);
+                                                    if (res === undefined || !res.ok)
+                                                        return toast(await config.error(res, `Error deleting department ${department.name}`));
 
-                                                        await fetchEmployees();
-                                                    }}
-                                                />
+                                                    if (selectedDepartment === department.id)
+                                                        setSelectedDepartment(undefined);
+
+                                                    await fetchDepartments();
+                                                }} />
                                             </Td>
                                         </Tr>
                                     );
@@ -234,9 +237,64 @@ function Administration() {
                         </Table>
                     </TableContainer>
                 </Box>
-            </HStack >
-        </Box >
+
+                <StackDivider />
+
+                <Box w='100%' id='task-templates' h='100%'>
+                    <Flex alignItems='center'>
+                        <Heading>Task Templates</Heading>
+                        <CreateTaskTemplateModalButton token={token} reloadSelected={fetchTasks} disabled={false} />
+                    </Flex>
+
+                    <TableContainer p={25} maxH={440} w={'100%'} overflowY='scroll' overflowX='hidden'>
+                        <Table borderWidth={1} variant='simple'>
+                            <Thead>
+                                <Tr>
+                                    <Th>ID</Th>
+                                    <Th>Template</Th>
+                                    <Th>Category</Th>
+                                    <Th><FiTrash /></Th>
+                                </Tr>
+                            </Thead>
+                            <Tbody>
+                                {tasks.map(task => {
+                                    return (
+                                        <Tr onClick={() => selectedTask === task.id ? setSelectedTask(undefined) : setSelectedTask(task.id)} bg={selectedTask === task.id ? 'rgba(0, 0, 0, 0.1)' : ''} _hover={{ bg: 'rgba(0, 0, 0, 0.1)', cursor: 'pointer' }}>
+                                            <Td>{task.id}</Td>
+                                            <Td maxW={550} overflowX='hidden'>{task.template}</Td>
+                                            <Td>{task.category}</Td>
+
+                                            <Td>
+                                                <DeletionConfirmationModalButton
+                                                    onDelete={async () => {
+                                                        let res = await fetch(`${config.api}/tasks/templates/${task.id}`, {
+                                                            method: 'DELETE',
+                                                            headers: {
+                                                                Authorization: `Bearer ${token}`,
+                                                            }
+                                                        }).catch(e => { });
+
+                                                        if (res === undefined || !res.ok)
+                                                            return toast(await config.error(res, `Error deleting task template ${task.template}`));
+
+                                                        if (selectedTask === task.id)
+                                                            setSelectedTask(undefined);
+
+                                                        await fetchTasks();
+                                                    }}
+                                                />
+                                            </Td>
+                                        </Tr>
+                                    )
+                                })}
+
+                            </Tbody>
+                        </Table>
+                    </TableContainer>
+                </Box>
+            </HStack>
+        </Box>
     );
 }
 
-export default Administration;
+export default AdministrationDashboard;

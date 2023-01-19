@@ -1,4 +1,4 @@
-import { Button, Textarea, useToast } from "@chakra-ui/react";
+import { Button, Flex, FormControl, FormLabel, useToast, Input, Checkbox, Select, Textarea } from "@chakra-ui/react";
 
 import {
     Modal,
@@ -14,44 +14,56 @@ import {
 import { useState } from 'react';
 import config from "./config";
 
-function AddNoteModalButton({ disabled, selected, token, reloadSelected }) {
+function CreateTaskTemplateModalButton({ disabled, selected, token, reloadSelected }) {
     const { isOpen, onOpen, onClose } = useDisclosure();
-    const [note, setNote] = useState('');
+    const [template, setTemplate] = useState("");
+    const [category, setCategory] = useState("TESTING");
     const toast = useToast();
 
     return (
         <>
-            <Button disabled={disabled ? disabled : false} w='100%' colorScheme='green' onClick={onOpen}>
-                Create Note
+            <Button disabled={disabled ? disabled : false} ml={5} colorScheme='green' onClick={onOpen}>
+                Create Task Template
             </Button>
 
             <Modal isOpen={isOpen} onClose={onClose}>
                 <ModalOverlay />
                 <ModalContent>
-                    <ModalHeader>Create Note</ModalHeader>
+                    <ModalHeader>Create Task Template</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
-                        <Textarea w='100%' h={200} placeholder='Note' value={note} onChange={(e) => setNote(e.currentTarget.value)} />
+                        <FormControl>
+                            <FormLabel>Template</FormLabel>
+                            <Input placeholder='Template' value={template} onChange={(e) => setTemplate(e.currentTarget.value)} />
+                        </FormControl>
+
+                        <FormControl mt={5}>
+                            <FormLabel>Category</FormLabel>
+                            <Select value={category} onChange={(e) => setCategory(e.currentTarget.value)}>
+                                <option value={"TESTING"}>TESTING</option>
+                                <option value={"GRADING"}>GRADING</option>
+                            </Select>
+                        </FormControl>
                     </ModalBody>
 
                     <ModalFooter>
                         <Button colorScheme='green' w='100%' onClick={async () => {
-                            let res = await fetch(`${config.api}/notes/lots/${selected.id}`, {
+                            let res = await fetch(`${config.api}/tasks/templates?category=${category}`, {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
                                     'Authorization': `Bearer ${token}`,
                                 },
-                                body: JSON.stringify(note),
+                                body: JSON.stringify(template),
                             }).catch(e => { });
 
                             if (res === undefined || !res.ok) {
-                                toast(await config.error(res, `Error creating note for lot ${selected.lotNo}`));
+                                toast(await config.error(res, `Error creating task template ${template}`));
                             } else {
                                 toast({
                                     title: "Success",
                                     position: "top-right",
-                                    description: `Successfully created note for ${selected.lotNo}`,
+                                    description: `Successfully created task template ${template}`,
                                     status: "success"
                                 });
 
@@ -66,4 +78,4 @@ function AddNoteModalButton({ disabled, selected, token, reloadSelected }) {
     );
 }
 
-export default AddNoteModalButton;
+export default CreateTaskTemplateModalButton;
