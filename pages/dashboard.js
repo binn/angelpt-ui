@@ -23,6 +23,7 @@ import AddLotModalButton from "../comps/addLotModal";
 import AddNoteModalButton from "../comps/createNoteModal";
 import EditTasksModalButton from "../comps/editTasksModal";
 import DeletionConfirmationModalButton from "../comps/deletionConfirmationModal";
+import ArchiveLotModalButton from "../comps/archiveLotModal";
 
 function Dashboard() {
     const [token, setToken] = useState("");
@@ -214,6 +215,26 @@ function Dashboard() {
                         <AddLotModalButton departments={departments} token={token} tasks={tasks} onChange={fetchLots} />
                         <AddNoteModalButton selected={selected} reloadSelected={reloadSelected} token={token} disabled={selected !== undefined ? false : true} />
                         <EditTasksModalButton reloadSelected={reloadSelected} disabled={selected !== undefined ? false : true} lot={selected} token={token} tasks={tasks} />
+                        <ArchiveLotModalButton hidden={!user.supervisor} disabled={selected !== undefined ? false : true} onArchive={async () => {
+                            let res = await fetch(`${config.api}/lots/${selected.id}/archive`, {
+                                method: 'POST',
+                                headers: {
+                                    Authorization: `Bearer ${token}`,
+                                },
+                            }).catch(e => { });
+
+                            if (res === undefined || !res.ok)
+                                return toast(await config.error(res, 'Error archiving lot'));
+
+                            fetchLots(token);
+                            setSelected(undefined);
+                            toast({
+                                title: 'Success',
+                                description: 'Successfully archived lot',
+                                position: 'bottom-left',
+                                status: 'success',
+                            });
+                        }} />
                     </HStack>
 
                     <TableContainer h={'71.85vh'} w={'100%'} overflowY='scroll' overflowX='hidden'>
