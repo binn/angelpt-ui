@@ -11,6 +11,8 @@ class SelectedLot extends React.Component {
         this.state = {
             assignments: incomingAssignments,
         };
+
+        this.toast = props.toast;
     }
 
     componentWillReceiveProps(newProps) {
@@ -29,7 +31,10 @@ class SelectedLot extends React.Component {
         }).catch(e => { });
 
         if (res === undefined || !res.ok)
+        {
+            this.toast(await config.error(res, 'Error updating task'));
             return false;
+        }
 
         return true;
     }
@@ -43,7 +48,7 @@ class SelectedLot extends React.Component {
             assignmentCountSum = "INVALID!";
 
         return (
-            <Box p={25} h='100%' overflowY='scroll'>
+            <Box p={25} h='100%' overflowY='scroll' overflowX='hidden'>
                 <HStack w='100%' spacing={5}>
                     <VStack h={500}>
                         <Box w='100%' h='100%'>
@@ -89,17 +94,13 @@ class SelectedLot extends React.Component {
                                             }).catch(e => { });
 
                                             if (res === undefined || !res.ok)
-                                                return toast({
-                                                    position: 'bottom-right',
-                                                    status: 'error',
-                                                    title: 'Error',
-                                                    description: 'Error updating lot assignments',
-                                                });
+                                                return this.toast(await config.error(res, 'Error updating lot assignments.'));
 
                                             this.props.reloadSelected();
                                         }} colorScheme='green' disabled={JSON.stringify(this.props.lot.assignments) !== JSON.stringify(this.state.assignments) ? false : true}>
                                             Save Changes
                                         </Button>
+
 
                                         <Button w='50%' onClick={() => {
                                             this.setState({ assignments: JSON.parse(JSON.stringify(this.props.lot.assignments)) });
@@ -198,7 +199,6 @@ class SelectedLot extends React.Component {
                         </SimpleGrid>
                     </Box>
                 </Box>
-
             </Box>
         )
     }

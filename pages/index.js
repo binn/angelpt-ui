@@ -21,12 +21,7 @@ function Index() {
         if (res === undefined || !res.ok) {
             setPin("");
             setLoading(false);
-            return toast({
-                status: 'error',
-                position: 'bottom-right',
-                title: 'Error',
-                description: 'There was an unknown error while logging in!'
-            });
+            return toast(await config.error(res, 'Error logging in.'));
         }
 
         let result = await res.json().catch(e => { });
@@ -34,12 +29,7 @@ function Index() {
         if (result === undefined) {
             setPin("");
             setLoading(false);
-            return toast({
-                status: 'error',
-                position: 'bottom-right',
-                title: 'Error',
-                description: 'There was an unknown error while logging in!'
-            });
+            return toast(await config.error(res, 'Error logging in.'));
         }
 
         localStorage.setItem("token", result.token);

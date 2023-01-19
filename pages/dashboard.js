@@ -75,12 +75,7 @@ function Dashboard() {
         }).catch(e => { });
 
         if (res === undefined || !res.ok)
-            return toast({
-                status: 'error',
-                position: 'bottom-left',
-                title: 'Error',
-                description: 'Error fetching lot',
-            });
+            return toast(await config.error(res, 'Error fetching lot ' + lot.lotNo));
 
         let result = await res.json();
         setSelected(result);
@@ -142,13 +137,9 @@ function Dashboard() {
         }).catch(e => { });
 
         if (res === undefined || !res.ok) {
-            return toast({
-                status: 'error',
-                position: 'bottom-left',
-                title: 'Error',
-                description: 'Error fetching lot',
-            });
             setLoadingSelected(false);
+
+            return toast(await config.error(res, `Error fetching lot ${selected.lotNo}`));
         }
 
         let result = await res.json();
@@ -176,8 +167,12 @@ function Dashboard() {
                     {loadingSelected ?
                         <Center><Spinner mt={100} /></Center> :
                         (selected !== undefined ?
-                            <SelectedLot lot={selected} user={user} token={token} departments={departments} reloadSelected={reloadSelected}/>
-                            : <></>)}
+                            <SelectedLot lot={selected} user={user} token={token} departments={departments} reloadSelected={reloadSelected} toast={toast} />
+                            : <>
+                                <Center mt={100}>
+                                    <Heading>Select a lot to get started</Heading>
+                                </Center>
+                            </>)}
 
                 </Box>
 
@@ -257,12 +252,7 @@ function Dashboard() {
                                                         }).catch(e => { });
 
                                                         if (res === undefined || !res.ok)
-                                                            return toast({
-                                                                position: 'bottom-right',
-                                                                status: 'error',
-                                                                title: 'Error',
-                                                                description: 'Error deleting lot',
-                                                            });
+                                                            return toast(await config.error(res, 'Error deleting lot'));
 
                                                         if (selected?.id === lot.id)
                                                             setSelected(undefined);

@@ -5,8 +5,12 @@ import {
     Link,
     Flex,
     HStack,
+    Menu,
     useColorModeValue,
     Center,
+    MenuButton,
+    MenuList,
+    MenuItem,
 } from "@chakra-ui/react";
 
 import { useEffect, useState } from "react";
@@ -14,12 +18,17 @@ import { Logo } from "./logo";
 
 function Header() {
     const [loggedIn, setLoggedIn] = useState(true);
+    const [user, setUser] = useState(undefined);
 
     useEffect(() => {
-        if(localStorage === undefined)
+        if (localStorage === undefined)
             return;
 
         setLoggedIn(localStorage.getItem("token") !== null);
+
+        const u = localStorage.getItem("user");
+        if (u != undefined)
+            setUser(JSON.parse(u));
     });
 
     return (
@@ -30,15 +39,22 @@ function Header() {
                 <ButtonGroup position='absolute' left={250} variant="link" spacing="8">
                     <Button as={Link} href="/dashboard">Lots Dashboard</Button>
                     <Button as={Link} href="/archive">Archived Lots</Button>
-                    <Button as={Link} href="/administration">Administration</Button>
-                    <Button as={Link} href="/analytics">Analytics</Button>
+                    <Menu isLazy>
+                        <MenuButton hidden={!user?.admin}>Administration</MenuButton>
+                        <MenuList>
+                            <MenuItem as={Link} href="/administration/employees">Employees</MenuItem>
+                            <MenuItem as={Link} href="/administration/departments">Departments</MenuItem>
+                            <MenuItem as={Link} href="/administration/task-templates">Task Templates</MenuItem>
+                        </MenuList>
+                    </Menu>
+                    <Button hidden={!user?.admin} as={Link} href="/analytics">Analytics</Button>
                 </ButtonGroup>
 
                 <HStack position='absolute' spacing="3" right={25}>
                     {loggedIn ? <Button onClick={() => {
                         localStorage.clear();
                         window.location.href = '/';
-                    }}colorScheme='red'>Logout</Button> : <></>}
+                    }} colorScheme='red'>Logout</Button> : <></>}
                 </HStack>
             </Flex>
         </Box>

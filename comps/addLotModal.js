@@ -140,12 +140,7 @@ function AddLotModalButton({ departments, tasks, token, disabled, onChange }) {
                             }).catch(e => { });
 
                             if (res === undefined || !res.ok)
-                                return toast({
-                                    position: 'bottom-right',
-                                    status: 'error',
-                                    title: 'Error',
-                                    description: 'Error creating lot',
-                                });
+                                return toast(await config.error(res, `Error creating lot ${lotNumber}`));
 
                             if (onChange)
                                 onChange();
