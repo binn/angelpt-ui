@@ -131,8 +131,7 @@ class SelectedLot extends React.Component {
                                                 if (!result) {
                                                     e.currentTarget.checked = !completed;
                                                 }
-                                            }} />
-                                            <Text>{task.name}</Text>
+                                            }}>{task.name}</Checkbox>
                                         </Flex>
                                     </FormControl>
                                 );
@@ -155,8 +154,7 @@ class SelectedLot extends React.Component {
                                                 if (!result) {
                                                     e.currentTarget.checked = !completed;
                                                 }
-                                            }} />
-                                            <Text>{task.name}</Text>
+                                            }}>{task.name}</Checkbox>
                                         </Flex>
                                     </FormControl>
                                 );
@@ -204,7 +202,7 @@ class SelectedLot extends React.Component {
 
                 <Box w='100%' mt={10}>
                     <Heading fontSize='125%'>Audits</Heading> { /* please add a filter multiselect where you can select audit types to filter by */}
-                    <Box borderRadius={5} h={300} overflowY='scroll' p={15} borderWidth={1} mt={5}>
+                    <Box borderRadius={5} h={500} overflowY='scroll' p={15} borderWidth={1} mt={5}>
                         <SimpleGrid columns={3} spacing={5}>
                             {this.props.lot.audits.map(audit => {
                                 return (
@@ -244,7 +242,7 @@ function AuditData({ audit, departments, mt = 0 }) {
                     <b>Old</b>
                     {data.old.map((x) => {
                         let d = departments.filter(y => y.id === x.id)[0];
-                        return (<Text>{d ? d.name : 'Unknown'}: {x.count}</Text>);
+                        return (<Text>{d ? d.name : `Unknown (${d.id})`}: {x.count}</Text>);
                     })}
                 </Text>
 
@@ -252,10 +250,23 @@ function AuditData({ audit, departments, mt = 0 }) {
                     <b>New</b>
                     {data.updated.map((x) => {
                         let d = departments.filter(y => y.id === x.id)[0];
-                        return (<Text>{d ? d.name : 'Unknown'}: {x.count}</Text>);
+                        return (<Text>{d ? d.name : `Unknown (${d.id})`}: {x.count}</Text>);
                     })}
                 </Text>
             </HStack>
+        );
+    }
+
+    if(audit.type === 'NOTE_DELETED') {
+        let data = JSON.parse(d);
+        
+        return (
+                <>
+                    <Text mt={mt}>{data.data}</Text>
+                    <br />
+                    <Text>Created by: {data.createdBy}</Text>
+                    <Text>Timestamp: {moment(data.timestamp).format('MM/DD/YYYY hh:mm A')}</Text>
+                </>
         );
     }
 

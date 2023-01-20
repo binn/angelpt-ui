@@ -1,5 +1,5 @@
 import Header from '../comps/header';
-import { Box, Center, Heading, HStack, Spinner, StackDivider, useToast, IconButton, Flex, Button } from '@chakra-ui/react';
+import { Box, Center, Heading, HStack, Spinner, StackDivider, useToast, IconButton, Flex, Button, Text } from '@chakra-ui/react';
 import {
     Table,
     Thead,
@@ -149,7 +149,7 @@ function AdministrationDashboard() {
                             </Tr>
                         </Thead>
                         <Tbody>
-                            {employees.map(employee => {
+                            {employees.sort((a, b) => a.id - b.id).map(employee => {
                                 return (
                                     <Tr onClick={() => selectedEmployee === employee.id ? setSelectedEmployee(undefined) : setSelectedEmployee(employee.id)} bg={selectedEmployee === employee.id ? 'rgba(0, 0, 0, 0.1)' : ''} _hover={{ bg: 'rgba(0, 0, 0, 0.1)', cursor: 'pointer' }}>
                                         <Td>{employee.id}</Td>
@@ -205,12 +205,12 @@ function AdministrationDashboard() {
                                 </Tr>
                             </Thead>
                             <Tbody>
-                                {departments.map(department => {
+                                {departments.sort((a, b) => a.id - b.id).map(department => {
                                     return (
                                         <Tr onClick={() => selectedDepartment === department.id ? setSelectedDepartment(undefined) : setSelectedDepartment(department.id)} bg={selectedDepartment === department.id ? 'rgba(0, 0, 0, 0.1)' : ''} _hover={{ bg: 'rgba(0, 0, 0, 0.1)', cursor: 'pointer' }}>
                                             <Td>{department.default ? <b>{department.name}</b> : department.name}</Td>
                                             <Td>{department.employees.length}</Td>
-                                            <Td maxW={550} overflowX='hidden'>{department.description}</Td>
+                                            <Td maxW={700} overflowX='hidden'>{department.description}</Td>
 
                                             <Td>
                                                 <DeletionConfirmationModalButton onDelete={async () => {
@@ -257,7 +257,7 @@ function AdministrationDashboard() {
                                 </Tr>
                             </Thead>
                             <Tbody>
-                                {tasks.map(task => {
+                                {tasks.sort((a, b) => a.id - b.id).map(task => {
                                     return (
                                         <Tr onClick={() => selectedTask === task.id ? setSelectedTask(undefined) : setSelectedTask(task.id)} bg={selectedTask === task.id ? 'rgba(0, 0, 0, 0.1)' : ''} _hover={{ bg: 'rgba(0, 0, 0, 0.1)', cursor: 'pointer' }}>
                                             <Td>{task.id}</Td>

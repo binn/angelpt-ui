@@ -1,4 +1,4 @@
-import { Heading, Box, Center, Spinner, Button, HStack, LinkOverlay, Flex, IconButton, useToast, Text, Checkbox, SimpleGrid, FormControl, FormLabel, Input } from "@chakra-ui/react"
+import { Heading, Box, Center, Spinner, Button, Image, HStack, LinkOverlay, Flex, IconButton, useToast, Text, Checkbox, SimpleGrid, FormControl, FormLabel, Input, VStack } from "@chakra-ui/react"
 import Header from "../comps/header";
 
 import {
@@ -24,6 +24,7 @@ import AddNoteModalButton from "../comps/createNoteModal";
 import EditTasksModalButton from "../comps/editTasksModal";
 import DeletionConfirmationModalButton from "../comps/deletionConfirmationModal";
 import ArchiveLotModalButton from "../comps/archiveLotModal";
+import { Logo } from "../comps/logo";
 
 function Dashboard() {
     const [token, setToken] = useState("");
@@ -172,8 +173,11 @@ function Dashboard() {
                         (selected !== undefined ?
                             <SelectedLot lot={selected} user={user} token={token} departments={departments} reloadSelected={reloadSelected} toast={toast} />
                             : <>
-                                <Center mt={100}>
-                                    <Heading>Select a lot to get started</Heading>
+                                <Center mt='25vh'>
+                                    <VStack>
+                                        <Image src="https://www.angelcellular.com/uploads/1/2/4/0/124019334/published/new-logo.png?1566586194" />
+                                        <Heading pt={20}>Select a lot to get started</Heading>
+                                    </VStack>
                                 </Center>
                             </>)}
 
@@ -253,13 +257,13 @@ function Dashboard() {
                             <Tbody>
                                 {lots.map(lot => {
                                     return (
-                                        <Tr onClick={() => selectLot(lot)} bg={selected?.id === lot.id ? 'rgba(0, 0, 0, 0.1)' : ''} _hover={{ bg: 'rgba(0, 0, 0, 0.1)', cursor: 'pointer' }}>
+                                        <Tr bg={selected?.id === lot.id ? 'rgba(0, 0, 0, 0.1)' : ''} _hover={{ bg: 'rgba(0, 0, 0, 0.1)', cursor: 'pointer' }}>
                                             <Td hidden>{lot.id}</Td>
-                                            <Td>{lot.lotNo}</Td>
-                                            <Td w={125} maxW={125} overflowX='hidden'>{lot.model}</Td>
-                                            <Td>{lot.grade}</Td>
-                                            <Td>{lot.count}</Td>
-                                            <Td>
+                                            <Td onClick={() => selectLot(lot)}>{lot.lotNo}</Td>
+                                            <Td w={125} maxW={125} overflowX='hidden' onClick={() => selectLot(lot)}>{lot.model}</Td>
+                                            <Td onClick={() => selectLot(lot)}>{lot.grade}</Td>
+                                            <Td onClick={() => selectLot(lot)}>{lot.count}</Td>
+                                            <Td onClick={() => selectLot(lot)}>
                                                 {moment(lot.timestamp).format('MM/DD/YYYY hh:mm A')}
                                             </Td>
                                             <Td hidden={!user.supervisor}>
