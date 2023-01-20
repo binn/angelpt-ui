@@ -1,4 +1,4 @@
-import { Heading, Box, Button, HStack, VStack, LinkOverlay, Flex, IconButton, useToast, Text, Checkbox, SimpleGrid, FormControl, FormLabel, Input, Icon, Editable, EditablePreview, EditableInput } from "@chakra-ui/react"
+import { Heading, Badge, Box, Button, HStack, VStack, LinkOverlay, Flex, IconButton, useToast, Text, Checkbox, SimpleGrid, FormControl, FormLabel, Input, Icon, Editable, EditablePreview, EditableInput } from "@chakra-ui/react"
 import config from "./config";
 import moment from "moment";
 import React from 'react';
@@ -40,6 +40,15 @@ class SelectedLot extends React.Component {
         return true;
     }
 
+    isNew() {
+        let date = new Date(this.props.lot.timestamp);
+        date.setHours(date.getHours() + 1);
+
+        if(date < Date.now())
+            return true;
+        return false;
+    }
+
     render() {
         let assignmentCountSum = this.state.assignments.reduce((a, b) => {
             return a + parseInt(b.count);
@@ -54,7 +63,7 @@ class SelectedLot extends React.Component {
                     <VStack h={500}>
                         <Box w='100%' h='100%'>
                             <Box w='100%' h={200}>
-                                <Heading mt={-5} fontSize='160%'>{this.props.lot.lotNo}</Heading>
+                                <Heading mt={-5} fontSize='160%'>{this.props.lot.lotNo} <Badge hidden={this.isNew()} colorScheme='purple'>NEW</Badge></Heading>
 
                                 <Text mt={3}>Time Created - {new Date(this.props.lot.timestamp).toLocaleString()}</Text>
                                 <Text>Amount Items - {this.props.lot.count}</Text>
@@ -62,6 +71,7 @@ class SelectedLot extends React.Component {
                                 <Text>Notes - {this.props.lot.notes.length}</Text>
                                 <Text>Audits - {this.props.lot.audits.length}</Text>
                                 <Text>Last Updated - {new Date(this.props.lot.audits[0].timestamp).toLocaleString()}</Text>
+                                <Text>Due At - {new Date(this.props.lot.expiration).toLocaleString()}</Text>
                             </Box>
                             <Heading fontSize='125%' mt={10}>Assignments</Heading>
                             <Box mt={5}>

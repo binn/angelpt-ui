@@ -1,4 +1,4 @@
-import { Heading, Box, Center, Spinner, Button, Image, HStack, LinkOverlay, Flex, IconButton, useToast, Text, Checkbox, SimpleGrid, FormControl, FormLabel, Input, VStack } from "@chakra-ui/react"
+import { Heading, Badge, Box, Center, Spinner, Button, Image, HStack, LinkOverlay, Flex, IconButton, useToast, Text, Checkbox, SimpleGrid, FormControl, FormLabel, Input, VStack } from "@chakra-ui/react"
 import Header from "../comps/header";
 
 import {
@@ -259,12 +259,20 @@ function Dashboard() {
                                     return (
                                         <Tr bg={selected?.id === lot.id ? 'rgba(0, 0, 0, 0.1)' : ''} _hover={{ bg: 'rgba(0, 0, 0, 0.1)', cursor: 'pointer' }}>
                                             <Td hidden>{lot.id}</Td>
-                                            <Td onClick={() => selectLot(lot)}>{lot.lotNo}</Td>
+                                            <Td onClick={() => selectLot(lot)}>{lot.lotNo}
+                                                <Badge ml={2} hidden={!lot.new} colorScheme='purple'>NEW</Badge>
+                                                <Badge ml={2} hidden={lot.priority !== 0} backgroundColor='blue.50'>LOW</Badge>
+                                                <Badge ml={2} hidden={lot.priority !== 2} colorScheme='red'>URGENT</Badge>
+                                                <Badge ml={2} hidden={lot.priority !== 3} backgroundColor='red.400'>IMMEDIATE</Badge>
+                                                <Badge ml={2} hidden={!lot.late} colorScheme='red'>LATE</Badge>
+                                                <Badge ml={2} hidden={!lot.dueSoon} backgroundColor='yellow.100'>DUE SOON</Badge>
+                                            </Td>
                                             <Td w={125} maxW={125} overflowX='hidden' onClick={() => selectLot(lot)}>{lot.model}</Td>
                                             <Td onClick={() => selectLot(lot)}>{lot.grade}</Td>
                                             <Td onClick={() => selectLot(lot)}>{lot.count}</Td>
                                             <Td onClick={() => selectLot(lot)}>
-                                                {moment(lot.timestamp).format('MM/DD/YYYY hh:mm A')}
+                                                {moment(lot.timestamp).format('MM/DD/YYYY')}<br />
+                                                {moment(lot.timestamp).format('hh:mm A')}
                                             </Td>
                                             <Td hidden={!user.supervisor}>
                                                 <DeletionConfirmationModalButton

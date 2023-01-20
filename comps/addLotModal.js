@@ -8,6 +8,7 @@ import {
     ModalFooter,
     ModalBody,
     ModalCloseButton,
+    Badge,
     useDisclosure,
 } from '@chakra-ui/react';
 import { useState } from "react";
@@ -22,6 +23,8 @@ function AddLotModalButton({ departments, tasks, token, disabled, onChange }) {
     const [grade, setGrade] = useState("A+");
     const [startingDepartmentId, setStartingDepartmentId] = useState(departments.filter(x => x.name !== 'HR')[0].id);
     const [lotTasks, setLotTasks] = useState([]);
+    const [priority, setPriority] = useState(1);
+    const [expiration, setExpiration] = useState("24h");
 
     const toast = useToast();
 
@@ -84,6 +87,29 @@ function AddLotModalButton({ departments, tasks, token, disabled, onChange }) {
                             </Select>
                         </FormControl>
 
+                        <FormControl mt={15} w='100%'>
+                            <FormLabel>Priority & Due Date { priority === 3 ? <Badge colorScheme='red'>IMMEDIATE</Badge> : ''}</FormLabel>
+                            <Flex>
+                                <Select onChange={(e) => setPriority(parseInt(e.currentTarget.value))} value={priority}>
+                                    <option value="0">Low</option>
+                                    <option value="1">Normal</option>
+                                    <option value="2">Urgent</option>
+                                    <option value="3">Immediate</option>
+                                </Select>
+                                <Select ml={3} onChange={(e) => setExpiration(e.currentTarget.value)} value={expiration}>
+                                    <option value="1h">One hour</option>
+                                    {priority !== 3 ?
+                                        <>
+                                            <option value="24h">One day</option>
+                                            <option value="48h">Two days</option>
+                                            <option value="72h">Three days</option>
+                                            <option value="1w">One week</option>
+                                        </>
+                                        : ''}
+                                </Select>
+                            </Flex>
+                        </FormControl>
+
                         <Flex>
                             <FormControl mt={15} w='50%'>
                                 <FormLabel>Tasks / Testing</FormLabel>
@@ -135,6 +161,8 @@ function AddLotModalButton({ departments, tasks, token, disabled, onChange }) {
                                     department: startingDepartmentId,
                                     tasks: lotTasks,
                                     model: modelNumber,
+                                    expiration,
+                                    priority,
                                     grade,
                                 }),
                             }).catch(e => { });
