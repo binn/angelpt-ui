@@ -21,7 +21,7 @@ function AddLotModalButton({ departments, tasks, token, disabled, onChange }) {
     const [modelNumber, setModelNumber] = useState("");
     const [itemCount, setItemCount] = useState("");
     const [grade, setGrade] = useState("A+");
-    const [startingDepartmentId, setStartingDepartmentId] = useState(departments.filter(x => x.name !== 'HR')[0].id);
+    const [startingDepartmentId, setStartingDepartmentId] = useState(departments.filter(x => x.name !== 'HR')[0]?.id);
     const [lotTasks, setLotTasks] = useState([]);
     const [priority, setPriority] = useState(1);
     const [expiration, setExpiration] = useState("24h");
