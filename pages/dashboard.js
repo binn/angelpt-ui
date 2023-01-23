@@ -242,7 +242,7 @@ function Dashboard() {
                         <Tooltip label="Printout">
                             <IconButton icon={<FiFile />} disabled={selected !== undefined ? false : true} onClick={() => {
                                 let a = document.createElement('a');
-                                a.href = '/api/lots/' + selected.id + '/report';
+                                a.href = '/api/lots/' + selected.id + '/report?name=' + user.name;
                                 a.target = '_blank';
                                 a.click();
                                 a.remove();
