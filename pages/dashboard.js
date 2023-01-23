@@ -1,4 +1,4 @@
-import { Heading, Badge, Box, Center, Spinner, Button, Image, HStack, LinkOverlay, Flex, IconButton, useToast, Text, Checkbox, SimpleGrid, FormControl, FormLabel, Input, VStack } from "@chakra-ui/react"
+import { Heading, Badge, Box, Center, Spinner, Button, Image, HStack, LinkOverlay, Flex, IconButton, useToast, Text, Checkbox, SimpleGrid, FormControl, FormLabel, Input, VStack, Tooltip } from "@chakra-ui/react"
 import Header from "../comps/header";
 
 import {
@@ -15,7 +15,7 @@ import {
 
 import moment from 'moment';
 import SelectedLot from "../comps/selectedLot";
-import { FiTrash, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FiTrash, FiChevronLeft, FiChevronRight, FiFile } from 'react-icons/fi';
 
 import config from '../comps/config';
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -239,6 +239,15 @@ function Dashboard() {
                                 status: 'success',
                             });
                         }} />
+                        <Tooltip label="Printout">
+                            <IconButton icon={<FiFile />} disabled={selected !== undefined ? false : true} onClick={() => {
+                                let a = document.createElement('a');
+                                a.href = '/api/lots/' + selected.id + '/report';
+                                a.target = '_blank';
+                                a.click();
+                                document.removeChild(a);
+                            }} />
+                        </Tooltip>
                     </HStack>
 
                     <TableContainer h={'71.85vh'} w={'100%'} overflowY='scroll' overflowX='hidden'>
