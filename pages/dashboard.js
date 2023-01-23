@@ -245,7 +245,7 @@ function Dashboard() {
                                 a.href = '/api/lots/' + selected.id + '/report';
                                 a.target = '_blank';
                                 a.click();
-                                document.removeChild(a);
+                                a.remove();
                             }} />
                         </Tooltip>
                     </HStack>
