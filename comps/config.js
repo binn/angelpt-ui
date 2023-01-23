@@ -15,6 +15,6 @@ async function error(res, title, defaultError = 'Unknown reason.') {
 }
 
 export default {
-    api: process.env.NODE_ENV === "production" ? 'https://localhost:7236' : 'https://track.angelcellular.com/api',
+    api: 'https://track.angelcellular.com/api',
     error
 };
