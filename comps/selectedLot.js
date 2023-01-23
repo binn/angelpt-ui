@@ -252,7 +252,7 @@ function AuditData({ audit, departments, mt = 0 }) {
                     <b>Old</b>
                     {data.old.map((x) => {
                         let d = departments.filter(y => y.id === x.id)[0];
-                        return (<Text>{d ? d.name : `Unknown (${d.id})`}: {x.count}</Text>);
+                        return (<Text>{d ? d.name : `Unknown (${x.id})`}: {x.count}</Text>);
                     })}
                 </Text>
 
@@ -260,7 +260,7 @@ function AuditData({ audit, departments, mt = 0 }) {
                     <b>New</b>
                     {data.updated.map((x) => {
                         let d = departments.filter(y => y.id === x.id)[0];
-                        return (<Text>{d ? d.name : `Unknown (${d.id})`}: {x.count}</Text>);
+                        return (<Text>{d ? d.name : `Unknown (${x.id})`}: {x.count}</Text>);
                     })}
                 </Text>
             </HStack>
