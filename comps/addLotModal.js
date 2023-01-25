@@ -14,7 +14,7 @@ import {
 import { useState } from "react";
 import config from "./config";
 
-function AddLotModalButton({ departments, tasks, token, disabled, onChange }) {
+function AddLotModalButton({ departments, tasks, token, hidden, disabled, onChange }) {
     const { isOpen, onOpen, onClose } = useDisclosure();
 
     const [lotNumber, setLotNumber] = useState("");
@@ -30,7 +30,7 @@ function AddLotModalButton({ departments, tasks, token, disabled, onChange }) {
 
     return (
         <>
-            <Button disabled={disabled ? disabled : false} w='100%' colorScheme='green' onClick={onOpen}>
+            <Button disabled={disabled ? disabled : false} hidden={hidden ? hidden : false} w='100%' colorScheme='green' onClick={onOpen}>
                 Add Lot
             </Button>
 

@@ -40,7 +40,7 @@ function Header() {
                     <Button as={Link} href="/dashboard">Lots Dashboard</Button>
                     <Button as={Link} href="/archive">Archived Lots</Button>
                     <Button hidden={!user?.admin} as={Link} href="/administration">Administration</Button>
-                    <Button hidden={!user?.admin} as={Link} href="/analytics">Analytics</Button>
+                    <Button hidden={!user?.supervisor} as={Link} href="/analytics">Analytics</Button>
                 </ButtonGroup>
 
                 <HStack position='absolute' spacing="3" right={25}>

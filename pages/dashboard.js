@@ -216,7 +216,7 @@ function Dashboard() {
                     </Flex>
 
                     <HStack spacing={5} alignItems='center' w='100%' borderWidth={1} p={15} borderBottomWidth={0} h='10vh'>
-                        <AddLotModalButton departments={departments} token={token} tasks={tasks} onChange={fetchLots} />
+                        <AddLotModalButton departments={departments} disabled={!user.supervisor} token={token} tasks={tasks} onChange={fetchLots} />
                         <AddNoteModalButton selected={selected} reloadSelected={reloadSelected} token={token} disabled={selected !== undefined ? false : true} />
                         <EditTasksModalButton reloadSelected={reloadSelected} disabled={selected !== undefined ? false : true} lot={selected} token={token} tasks={tasks} />
                         <ArchiveLotModalButton hidden={!user.supervisor} disabled={selected !== undefined ? false : true} onArchive={async () => {
