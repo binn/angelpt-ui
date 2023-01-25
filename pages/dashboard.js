@@ -277,7 +277,7 @@ function Dashboard() {
                                                 <Badge ml={2} hidden={!lot.dueSoon} backgroundColor='yellow.100'>DUE SOON</Badge>
                                             </Td>
                                             <Td w={125} maxW={125} overflowX='hidden' onClick={() => selectLot(lot)}>{lot.model}</Td>
-                                            <Td onClick={() => selectLot(lot)}>{lot.grade}</Td>
+                                            <Td onClick={() => selectLot(lot)}>{(lot.grade === "UNKNOWN" ? "UNK" : lot.grade)}</Td>
                                             <Td onClick={() => selectLot(lot)}>{lot.count}</Td>
                                             <Td onClick={() => selectLot(lot)}>
                                                 {moment(lot.timestamp).format('MM/DD/YYYY')}<br />

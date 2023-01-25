@@ -182,7 +182,7 @@ class SelectedLot extends React.Component {
                                 : this.props.lot.notes.map(note => {
                                     return (
                                         <Box mb={5} borderRadius={5} p={15} borderWidth={1}>
-                                            <Flex h={8} w={'100%'} position='relative' alignItems='center'>
+                                            <Flex h={8} mb={2} w={'100%'} position='relative' alignItems='center'>
                                                 <Text position='absolute' left={0}>Created by <b>{note.createdBy}</b></Text>
                                                 <Box position='absolute' right={0}>
                                                     <DeletionConfirmationModalButton onDelete={async () => {
@@ -199,10 +199,9 @@ class SelectedLot extends React.Component {
                                                         this.props.reloadSelected(false);
                                                     }} />
                                                 </Box>
-
                                             </Flex>
 
-                                            <Text mt={2}>{note.data}</Text>
+                                            {note.data.split('\n').map(x => <Text>{x}</Text>)}
                                         </Box>
                                     );
                                 })}
