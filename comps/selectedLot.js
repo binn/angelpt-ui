@@ -240,7 +240,7 @@ class SelectedLot extends React.Component {
                     </HStack>
                     <Box borderRadius={5} h={500} overflowY='scroll' p={15} borderWidth={1} mt={5}>
                         <SimpleGrid columns={3} spacing={5}>
-                            {this.props.lot.audits.filter(x => this.state.filters.includes(x.type) || this.state.filters.includes("ALL")).map(audit => {
+                            {this.props.lot.audits.filter(x => this.state.filters?.includes(x.type) || this.state.filters?.includes("ALL")).map(audit => {
                                 return (
                                     <Box borderRadius={5} p={15} borderWidth={1}>
                                         <Text fontSize='115%'><b>{audit.type}</b></Text>
