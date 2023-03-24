@@ -9,12 +9,23 @@ class SelectedArchivedLot extends React.Component {
     constructor(props) {
         super(props);
 
+        this.toast = props.toast;
+        this.options = [
+            "ALL",
+            "LOT_CREATED",
+            "NOTE_DELETED",
+            "LOT_REASSIGNED",
+            "TASK_COMPLETED",
+            "TASK_UNCOMPLETED"
+        ].map(x => ({ label: x, value: x }));
+
         let incomingAssignments = JSON.parse(JSON.stringify(props.lot.assignments)); // prevent javascript shallow copy
         this.state = {
             assignments: incomingAssignments,
+            filters: ["ALL"]
         };
 
-        this.toast = props.toast;
+        this.handleFilterChange = this.handleFilterChange.bind(this);
     }
 
     componentWillReceiveProps(newProps) {
@@ -22,6 +33,12 @@ class SelectedArchivedLot extends React.Component {
         this.state = {
             assignments: incomingAssignments,
         };
+    }
+
+    handleFilterChange(value) {
+        this.setState({
+            filters: value
+        });
     }
 
     async updateTaskCompletedState(completed, task) {
@@ -140,10 +157,19 @@ class SelectedArchivedLot extends React.Component {
                 </Box>
 
                 <Box w='100%' mt={10}>
-                    <Heading fontSize='125%'>Audits</Heading> { /* please add a filter multiselect where you can select audit types to filter by */}
+                    <HStack w='100%' justifyContent='space-between'>
+                        <Heading fontSize='125%'>Audits</Heading>
+                        <MultiSelect
+                            options={this.options}
+                            value={this.state.filters}
+                            label='Audit type filters'
+                            onChange={this.handleFilterChange}
+                            selectionVisibleIn={SelectionVisibilityMode.Both}
+                        />
+                    </HStack>
                     <Box borderRadius={5} h={500} overflowY='scroll' p={15} borderWidth={1} mt={5}>
                         <SimpleGrid columns={3} spacing={5}>
-                            {this.props.lot.audits.map(audit => {
+                            {this.props.lot.audits.filter(x => this.state.filters.includes(x.type) || this.state.filters.includes("ALL")).map(audit => {
                                 return (
                                     <Box borderRadius={5} p={15} borderWidth={1}>
                                         <Text fontSize='115%'><b>{audit.type}</b></Text>
