@@ -225,6 +225,7 @@ function ArchivedLots() {
                                     <Th>Lot #</Th>
                                     <Th>Model</Th>
                                     <Th>Grade</Th>
+                                    <Th>GB</Th>
                                     <Th>Count</Th>
                                     <Th>Created On</Th>
                                     <Th hidden={!user.supervisor}><Center><FiFolderMinus /></Center></Th>
@@ -235,12 +236,14 @@ function ArchivedLots() {
                                     return (
                                         <Tr bg={selected?.id === lot.id ? 'rgba(0, 0, 0, 0.1)' : ''} _hover={{ bg: 'rgba(0, 0, 0, 0.1)', cursor: 'pointer' }}>
                                             <Td hidden>{lot.id}</Td>
-                                            <Td onClick={() => selectLot(lot)}>{lot.lotNo}</Td>
+                                            <Td onClick={() => selectLot(lot)} fontSize={'0.9rem'}>{lot.lotNo}</Td>
                                             <Td w={125} maxW={125} overflowX='hidden' onClick={() => selectLot(lot)}>{lot.model}</Td>
-                                            <Td onClick={() => selectLot(lot)}>{lot.grade}</Td>
+                                            <Td onClick={() => selectLot(lot)}>{(lot.grade === "UNKNOWN" ? "UNK" : lot.grade)}</Td>
+                                            <Td onClick={() => selectLot(lot)}>{lot.GB}</Td>
                                             <Td onClick={() => selectLot(lot)}>{lot.count}</Td>
                                             <Td onClick={() => selectLot(lot)}>
-                                                {moment(lot.timestamp).format('MM/DD/YYYY hh:mm A')}
+                                                {moment(lot.timestamp).format('MM/DD/YYYY')}<br />
+                                                {moment(lot.timestamp).format('hh:mm A')}
                                             </Td>
                                             <Td hidden={!user.supervisor}>
                                                 <UnarchiveConfirmationModal

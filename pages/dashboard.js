@@ -35,11 +35,12 @@ function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [query, setQuery] = useState("");
     const [page, setPage] = useState(1);
-    const [pages, setPages] = useState(0);
+    const [pages, setPages] = useState(1);
     const [lastSearch, setLastSearch] = useState(0);
     const [lastSearchChange, setLastSearchChange] = useState(Date.now());
     const [tasks, setTasks] = useState([]);
     const [loadingSelected, setLoadingSelected] = useState(false);
+    const [currentDepartmentSearchSetting, setCurrentDepartmentSearchSetting] = useState(false);
 
     const toast = useToast();
     const getLastSearchChange = useGetter(lastSearchChange);
@@ -112,8 +113,8 @@ function Dashboard() {
         setTasks(result);
     }
 
-    const fetchLots = async (t, p, q) => {
-        let res = await fetch(`${config.api}/lots?page=${p ? p : page - 1}${q ? `&lotNo=${q}` : query !== "" ? `&lotNo=${query}` : ''}`, {
+    const fetchLots = async (t, p, q, d) => {
+        let res = await fetch(`${config.api}/lots?page=${p ? p : page - 1}${(d !== undefined ? d : currentDepartmentSearchSetting) === true ? `&department=true` : ``}${q ? `&lotNo=${q}` : query !== "" ? `&lotNo=${query}` : ''}`, {
             headers: {
                 Authorization: `Bearer ${token ? token : t}`,
             },
@@ -125,8 +126,14 @@ function Dashboard() {
         }
 
         let result = await res.json();
+        
+        let currentPage = p ? p : page;
+        if (currentPage > result.totalPages) {
+            setPage(result.totalPages);
+        } else {
+            setPage(result.currentPage);
+        }
 
-        setPage(result.currentPage);
         setPages(result.totalPages);
         setLots(result.results);
     }
@@ -198,7 +205,14 @@ function Dashboard() {
                             }
                         }} />
 
-                        <Flex alignItems='center' justifyContent='right' w='50%' ml={3}>
+                        <Flex alignItems='center' justifyContent='right' w='30%' ml={3}>
+                            <Checkbox isChecked={currentDepartmentSearchSetting} onChange={(e) => {
+                                fetchLots(undefined, undefined, undefined, e.target.checked);
+                                setCurrentDepartmentSearchSetting(e.target.checked);
+                            }}>My department only</Checkbox>
+                        </Flex>
+
+                        <Flex alignItems='center' justifyContent='right' w='30%' ml={3}>
                             <Button mr={3} onClick={() => {
                                 if (page > 1) {
                                     setPage(page - 1);
@@ -258,6 +272,7 @@ function Dashboard() {
                                     <Th>Lot #</Th>
                                     <Th>Model</Th>
                                     <Th>Grade</Th>
+                                    <Th>GB</Th>
                                     <Th>Count</Th>
                                     <Th>Created On</Th>
                                     <Th hidden={!user.supervisor}><Center><FiTrash /></Center></Th>
@@ -268,16 +283,18 @@ function Dashboard() {
                                     return (
                                         <Tr bg={selected?.id === lot.id ? 'rgba(0, 0, 0, 0.1)' : ''} _hover={{ bg: 'rgba(0, 0, 0, 0.1)', cursor: 'pointer' }}>
                                             <Td hidden>{lot.id}</Td>
-                                            <Td onClick={() => selectLot(lot)}>{lot.lotNo}
-                                                <Badge ml={2} hidden={!lot.new} colorScheme='purple'>NEW</Badge>
+                                            <Td onClick={() => selectLot(lot)} fontSize={'0.9rem'}>{lot.lotNo}
+                                                <Badge ml={2} size='sm' hidden={!lot.new} colorScheme='purple'>NEW</Badge>
                                                 <Badge ml={2} hidden={lot.priority !== 0} backgroundColor='blue.50'>LOW</Badge>
                                                 <Badge ml={2} hidden={lot.priority !== 2} colorScheme='red'>URGENT</Badge>
                                                 <Badge ml={2} hidden={lot.priority !== 3} backgroundColor='red.400'>IMMEDIATE</Badge>
+                                                <Badge ml={2} hidden={lot.priority !== 4} backgroundColor='red.400'>PNI</Badge>
                                                 <Badge ml={2} hidden={!lot.late} colorScheme='red'>LATE</Badge>
                                                 <Badge ml={2} hidden={!lot.dueSoon} backgroundColor='yellow.100'>DUE SOON</Badge>
                                             </Td>
                                             <Td w={125} maxW={125} overflowX='hidden' onClick={() => selectLot(lot)}>{lot.model}</Td>
                                             <Td onClick={() => selectLot(lot)}>{(lot.grade === "UNKNOWN" ? "UNK" : lot.grade)}</Td>
+                                            <Td onClick={() => selectLot(lot)}>{lot.GB}</Td>
                                             <Td onClick={() => selectLot(lot)}>{lot.count}</Td>
                                             <Td onClick={() => selectLot(lot)}>
                                                 {moment(lot.timestamp).format('MM/DD/YYYY')}<br />

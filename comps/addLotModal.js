@@ -24,7 +24,8 @@ function AddLotModalButton({ departments, tasks, token, hidden, disabled, onChan
     const [startingDepartmentId, setStartingDepartmentId] = useState(departments.filter(x => x.name !== 'HR')[0]?.id);
     const [lotTasks, setLotTasks] = useState([]);
     const [priority, setPriority] = useState(1);
-    const [expiration, setExpiration] = useState("24h");
+    const [expiration, setExpiration] = useState("72h");
+    const [GB, setGB] = useState("");
 
     const toast = useToast();
 
@@ -57,24 +58,32 @@ function AddLotModalButton({ departments, tasks, token, hidden, disabled, onChan
                             </FormControl>
                         </Flex>
 
-                        <FormControl mt={15} w='100%'>
-                            <FormLabel>Grade</FormLabel>
-                            <Select onChange={(e) => setGrade(e.currentTarget.value)} value={grade}>
-                                <option value='A+'>A+</option>
-                                <option value='A'>A</option>
-                                <option value='A-'>A-</option>
-                                <option value='B+'>B+</option>
-                                <option value='B'>B</option>
-                                <option value='B-'>B-</option>
-                                <option value='C+'>C+</option>
-                                <option value='C'>C</option>
-                                <option value='C-'>C-</option>
-                                <option value='D'>D</option>
-                                <option value='CPO'>CPO</option>
-                                <option value='NEW'>New</option>
-                                <option value='UNKNOWN'>Unknown</option>
-                            </Select>
-                        </FormControl>
+                        <Flex mt={15}>
+                            <FormControl w='50%'>
+                                <FormLabel>Grade</FormLabel>
+                                <Select onChange={(e) => setGrade(e.currentTarget.value)} value={grade}>
+                                    <option value='AA+'>AA+</option>
+                                    <option value='A+'>A+</option>
+                                    <option value='A'>A</option>
+                                    <option value='A-'>A-</option>
+                                    <option value='B+'>B+</option>
+                                    <option value='B'>B</option>
+                                    <option value='B-'>B-</option>
+                                    <option value='C+'>C+</option>
+                                    <option value='C'>C</option>
+                                    <option value='C-'>C-</option>
+                                    <option value='D'>D</option>
+                                    <option value='CPO'>CPO</option>
+                                    <option value='NEW'>New</option>
+                                    <option value='UNKNOWN'>Unknown</option>
+                                </Select>
+                            </FormControl>
+
+                            <FormControl ml={3} w='50%'>
+                                <FormLabel>GB</FormLabel>
+                                <Input onChange={(e) => setGB(e.currentTarget.value)} value={GB} placeholder='GB' />
+                            </FormControl>
+                        </Flex>
 
                         <FormControl mt={15} w='100%'>
                             <FormLabel>Starting Department</FormLabel>
@@ -88,7 +97,7 @@ function AddLotModalButton({ departments, tasks, token, hidden, disabled, onChan
                         </FormControl>
 
                         <FormControl mt={15} w='100%'>
-                            <FormLabel>Priority & Due Date { priority === 3 ? <Badge colorScheme='red'>IMMEDIATE</Badge> : ''}</FormLabel>
+                            <FormLabel>Priority & Due Date {priority === 3 ? <Badge colorScheme='red'>IMMEDIATE</Badge> : ''}</FormLabel>
                             <Flex>
                                 <Select onChange={(e) => setPriority(parseInt(e.currentTarget.value))} value={priority}>
                                     <option value="0">Low</option>
@@ -129,7 +138,7 @@ function AddLotModalButton({ departments, tasks, token, hidden, disabled, onChan
                             </FormControl>
 
                             <FormControl mt={15} w='50%'>
-                                <FormLabel>Tasks / Grading</FormLabel>
+                                <FormLabel>Tasks / Repair & Grading</FormLabel>
                                 <CheckboxGroup>
                                     <VStack spacing={4} w='100%' alignItems='left'>
                                         {tasks.filter(x => x.category === 'GRADING').map(x => {
@@ -164,6 +173,7 @@ function AddLotModalButton({ departments, tasks, token, hidden, disabled, onChan
                                     expiration,
                                     priority,
                                     grade,
+                                    GB
                                 }),
                             }).catch(e => { });
 

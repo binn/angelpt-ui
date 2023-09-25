@@ -4,6 +4,7 @@ import moment from "moment";
 import React from 'react';
 import { FiTrash } from "react-icons/fi";
 import DeletionConfirmationModalButton from "./deletionConfirmationModal";
+import { MultiSelect, SelectionVisibilityMode } from "chakra-multiselect";
 
 class SelectedArchivedLot extends React.Component {
     constructor(props) {
@@ -119,7 +120,7 @@ class SelectedArchivedLot extends React.Component {
                     </Box>
                     <Box h='100%'>
                         <Flex h={15} w='100%' alignItems='center' position='relative'>
-                            <Heading fontSize='125%' left={0} position='absolute'>Tasks / Grading</Heading>
+                            <Heading fontSize='125%' left={0} position='absolute'>Tasks / Repair & Grading</Heading>
                         </Flex>
                         <Box p={15} h={500} mt={5} borderWidth={1} borderRadius={5} w={300}>
                             {this.props.lot.tasks.filter(x => x.category === 'GRADING').map(task => {
@@ -143,7 +144,7 @@ class SelectedArchivedLot extends React.Component {
                                 <Text>There are no notes currently associated with this lot.</Text>
                                 : this.props.lot.notes.map(note => {
                                     return (
-                                        <Box mb={5} borderRadius={5} p={15} borderWidth={1}>
+                                        <Box mb={2} mr={2} borderRadius={5} p={15} borderWidth={1}>
                                             <Flex h={8} mb={2} w={'100%'} position='relative' alignItems='center'>
                                                 <Text position='absolute' left={0}>Created by <b>{note.createdBy}</b></Text>
                                             </Flex>
@@ -169,7 +170,7 @@ class SelectedArchivedLot extends React.Component {
                     </HStack>
                     <Box borderRadius={5} h={500} overflowY='scroll' p={15} borderWidth={1} mt={5}>
                         <SimpleGrid columns={3} spacing={5}>
-                            {this.props.lot.audits.filter(x => this.state.filters.includes(x.type) || this.state.filters.includes("ALL")).map(audit => {
+                            {this.props.lot.audits.filter(x => this.state.filters?.includes(x.type) || this.state.filters?.includes("ALL")).map(audit => {
                                 return (
                                     <Box borderRadius={5} p={15} borderWidth={1}>
                                         <Text fontSize='115%'><b>{audit.type}</b></Text>
