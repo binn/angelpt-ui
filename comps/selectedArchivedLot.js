@@ -95,7 +95,7 @@ class SelectedArchivedLot extends React.Component {
                                             );
                                         })}
                                     </SimpleGrid>
-                                    <Text mt={0} textAlign='left' w='100%'>Total: <b style={{ color: assignmentCountSum !== this.props.lot.count ? 'red' : 'black' }}>{`${assignmentCountSum}`} / {this.props.lot.count}</b></Text>
+                                    <Text mt={0} textAlign='left' w='100%'>Total: <b style={{ color: assignmentCountSum !== this.props.lot.count ? 'red' : '' }}>{`${assignmentCountSum}`} / {this.props.lot.count}</b></Text>
                                 </VStack>
                             </Box>
                         </Box>

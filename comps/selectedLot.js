@@ -75,6 +75,8 @@ class SelectedLot extends React.Component {
         if (assignmentCountSum == NaN)
             assignmentCountSum = "INVALID!";
 
+        let latestReassignmentAudit = this.props.lot.audits.filter(x => x.type === "LOT_REASSIGNED")[0];
+
         return (
             <Box p={25} h='100%' overflowY='scroll' overflowX='hidden'>
                 <HStack w='100%' spacing={5}>
@@ -110,32 +112,77 @@ class SelectedLot extends React.Component {
                                             );
                                         })}
                                     </SimpleGrid>
-                                    <Text mt={0} textAlign='left' w='100%'>Total: <b style={{ color: assignmentCountSum !== this.props.lot.count ? 'red' : 'black' }}>{`${assignmentCountSum}`} / {this.props.lot.count}</b></Text>
+                                    {
+                                        this.props.lot.assignments.filter(x => x.received !== true).length >= 1 ?
+                                            <>
+                                                <Text>
+                                                    FROM: {JSON.parse(latestReassignmentAudit.data).new.filter(x => latestReassignmentAudit.data.old.filter(y => x.count + y.count ==).length )}{" "}
+                                                    TOTAL: {JSON.parse(latestReassignmentAudit.data).old.filter(x => x.id == latestReassignmentAudit.department)[0].count}{" "}
+                                                    TO: <b>{this.props.departments.filter(x => x.id === latestReassignmentAudit.department)[0].name.toUpperCase()}</b>
+                                                </Text>
+                                            </>
+                                            : <>
+                                                <Text mt={0} textAlign='left' w='100%'>Total: <b style={{ color: assignmentCountSum !== this.props.lot.count ? 'red' : '' }}>{`${assignmentCountSum}`} / {this.props.lot.count}</b></Text>
+                                            </>
+                                    }
                                     <Flex w='100%'>
-                                        <Button w='50%' mr={2} onClick={async () => {
-                                            let res = await fetch(`${config.api}/lots/${this.props.lot.id}/assignments`, {
-                                                method: 'POST',
-                                                headers: {
-                                                    Authorization: `Bearer ${this.props.token}`,
-                                                    "Content-Type": "application/json"
-                                                },
-                                                body: JSON.stringify(this.state.assignments)
-                                            }).catch(e => { });
+                                        {this.props.lot.assignments.filter(x => x.received !== true).length >= 1 ?
+                                            <>
+                                                <Button
+                                                    colorScheme='green'
+                                                    w='100%'
+                                                    isDisabled={this.props
+                                                        .lot
+                                                        .assignments
+                                                        .filter(x => x.received !== true
+                                                            && x.id === JSON.parse(localStorage.getItem("user")).department.id)
+                                                        .length >= 1 ? false : true}
+                                                    onClick={async () => {
+                                                        let res = await fetch(`${config.api}/lots/${this.props.lot.id}/assignments/ack`, {
+                                                            method: 'POST',
+                                                            headers: {
+                                                                Authorization: `Bearer ${this.props.token}`,
+                                                                "Content-Type": "application/json"
+                                                            },
+                                                        }).catch(e => { });
 
-                                            if (res === undefined || !res.ok)
-                                                return this.toast(await config.error(res, 'Error updating lot assignments.'));
+                                                        if (res === undefined || !res.ok)
+                                                            return this.toast(await config.error(res, 'Error updating lot assignments.'));
 
-                                            this.props.reloadSelected();
-                                        }} colorScheme='green' disabled={JSON.stringify(this.props.lot.assignments) !== JSON.stringify(this.state.assignments) ? false : true}>
-                                            Save Changes
-                                        </Button>
+                                                        setTimeout(() => this.props.reloadSelected(), 50);
+                                                    }}
+                                                >
+                                                    Receive
+                                                </Button>
+                                            </>
+                                            :
+                                            <>
+                                                <Button w='50%' mr={2} onClick={async () => {
+                                                    let res = await fetch(`${config.api}/lots/${this.props.lot.id}/assignments`, {
+                                                        method: 'POST',
+                                                        headers: {
+                                                            Authorization: `Bearer ${this.props.token}`,
+                                                            "Content-Type": "application/json"
+                                                        },
+                                                        body: JSON.stringify(this.state.assignments)
+                                                    }).catch(e => { });
+
+                                                    if (res === undefined || !res.ok)
+                                                        return this.toast(await config.error(res, 'Error updating lot assignments.'));
+
+                                                    this.props.reloadSelected();
+                                                }} colorScheme='green' disabled={JSON.stringify(this.props.lot.assignments) !== JSON.stringify(this.state.assignments) ? false : true}>
+                                                    Save Changes
+                                                </Button>
 
 
-                                        <Button w='50%' onClick={() => {
-                                            this.setState({ assignments: JSON.parse(JSON.stringify(this.props.lot.assignments)) });
-                                        }} colorScheme='red' disabled={JSON.stringify(this.props.lot.assignments) !== JSON.stringify(this.state.assignments) ? false : true}>
-                                            Discard Changes
-                                        </Button>
+                                                <Button w='50%' onClick={() => {
+                                                    this.setState({ assignments: JSON.parse(JSON.stringify(this.props.lot.assignments)) });
+                                                }} colorScheme='red' disabled={JSON.stringify(this.props.lot.assignments) !== JSON.stringify(this.state.assignments) ? false : true}>
+                                                    Discard Changes
+                                                </Button>
+                                            </>
+                                        }
                                     </Flex>
                                 </VStack>
                             </Box>
@@ -254,7 +301,7 @@ class SelectedLot extends React.Component {
                         </SimpleGrid>
                     </Box>
                 </Box>
-            </Box>
+            </Box >
         )
     }
 

@@ -1,4 +1,4 @@
-import { Heading, Badge, Box, Center, Spinner, Button, Image, HStack, LinkOverlay, Flex, IconButton, useToast, Text, Checkbox, SimpleGrid, FormControl, FormLabel, Input, VStack, Tooltip } from "@chakra-ui/react"
+import { Heading, Badge, Box, Center, Spinner, Button, Image, HStack, LinkOverlay, Flex, IconButton, useToast, Text, Checkbox, SimpleGrid, FormControl, FormLabel, Input, VStack, Tooltip, useColorMode } from "@chakra-ui/react"
 import Header from "../comps/header";
 
 import {
@@ -126,7 +126,7 @@ function Dashboard() {
         }
 
         let result = await res.json();
-        
+
         let currentPage = p ? p : page;
         if (currentPage > result.totalPages) {
             setPage(result.totalPages);

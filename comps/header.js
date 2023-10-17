@@ -11,14 +11,21 @@ import {
     MenuButton,
     MenuList,
     MenuItem,
+    IconButton,
+    Icon,
+    Text,
+    useColorMode
 } from "@chakra-ui/react";
 
 import { useEffect, useState } from "react";
 import { Logo } from "./logo";
+import { CiLight } from 'react-icons/ci';
 
 function Header() {
     const [loggedIn, setLoggedIn] = useState(true);
     const [user, setUser] = useState(undefined);
+    const { toggleColorMode } = useColorMode();
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (localStorage === undefined)
@@ -29,7 +36,12 @@ function Header() {
         let u = localStorage.getItem("user");
         if (u !== undefined)
             setUser(JSON.parse(u));
+
+        setLoading(false);
     }, []);
+
+    if (loading)
+        return <></>;
 
     return (
         <Box as="section" >
@@ -44,10 +56,26 @@ function Header() {
                 </ButtonGroup>
 
                 <HStack position='absolute' spacing="3" right={25}>
-                    {loggedIn ? <Button onClick={() => {
-                        localStorage.clear();
-                        window.location.href = '/';
-                    }} colorScheme='red'>Logout</Button> : <></>}
+                    <IconButton
+                        onClick={toggleColorMode}
+                        icon={<Icon as={CiLight} />}
+                    />
+
+                    {loggedIn ? <>
+                        <Button onClick={() => {
+                            localStorage.clear();
+                            window.location.href = '/';
+                        }} colorScheme='red'>Logout</Button>
+
+                        <Flex
+                            flexDirection='column'
+                            spacing={4}
+                            alignItems='left'
+                        >
+                            <Text>Hello, <b>{user.name.toUpperCase().split(" ").reverse().join(" ")}</b></Text>
+                            <Text>Logged in at {new Date(user.loggedIn).toLocaleTimeString()}</Text>
+                        </Flex>
+                    </> : <></>}
                 </HStack>
             </Flex>
         </Box>

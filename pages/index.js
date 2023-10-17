@@ -32,6 +32,7 @@ function Index() {
             return toast(await config.error(res, 'Error logging in.'));
         }
 
+        result.employee.loggedIn = Date.now();
         localStorage.setItem("token", result.token);
         localStorage.setItem("user", JSON.stringify(result.employee));
         window.location.href = '/dashboard';

@@ -128,7 +128,7 @@ function AddLotModalButton({ departments, tasks, token, hidden, disabled, onChan
                                             return (
                                                 <Checkbox checked={lotTasks.includes(x.id)} onChange={(e) => {
                                                     lotTasks.includes(x.id) ?
-                                                        delete lotTasks[lotTasks.indexOf(x.id)] :
+                                                        lotTasks.splice(lotTasks.indexOf(x.id), 1) :
                                                         lotTasks.push(x.id);
                                                 }}>{x.template}</Checkbox>
                                             );
@@ -145,7 +145,7 @@ function AddLotModalButton({ departments, tasks, token, hidden, disabled, onChan
                                             return (
                                                 <Checkbox checked={lotTasks.includes(x.id)} onChange={(e) => {
                                                     lotTasks.includes(x.id) ?
-                                                        delete lotTasks[lotTasks.indexOf(x.id)] :
+                                                        lotTasks.splice(lotTasks.indexOf(x.id), 1) :
                                                         lotTasks.push(x.id);
                                                 }}>{x.template}</Checkbox>
                                             );
